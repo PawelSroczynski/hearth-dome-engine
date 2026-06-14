@@ -1,0 +1,15 @@
+{
+  "params": {
+    "symmetry": "icosa",
+    "frequency": 2,
+    "arch": false
+  },
+  "outputs": {
+    "TOTAL BRICKS": "26",
+    "FULL BRICKS": "16",
+    "CUT BRICKS": "10",
+    "SPHERE FACES": "42",
+    "PENTAGONS": "12",
+    "HEXAGONS": "30"
+  }
+}

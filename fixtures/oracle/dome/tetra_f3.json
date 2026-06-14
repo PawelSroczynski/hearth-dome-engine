@@ -1,0 +1,15 @@
+{
+  "params": {
+    "symmetry": "tetra",
+    "frequency": 3,
+    "arch": false
+  },
+  "outputs": {
+    "TOTAL BRICKS": "16",
+    "FULL BRICKS": "4",
+    "CUT BRICKS": "12",
+    "SPHERE FACES": "20",
+    "PENTAGONS": null,
+    "HEXAGONS": "16"
+  }
+}
