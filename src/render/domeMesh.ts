@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import type { GoldbergFace } from '../core/goldberg/dual';
 import { classifyFace, type Classification } from '../core/goldberg/hemisphere';
+import { flattenFace } from '../core/bricks/panel';
 import type { Vec3 } from '../core/solids/base';
 
 export const BRICK_COLORS: Record<string, number> = {
@@ -32,20 +33,21 @@ export function buildDomeGroup(
     const kind = classifyFace(face, up, cut);
     if (kind === 'below') continue;
 
+    // FLAT brick: project corners to the face plane so the panel is genuinely
+    // planar (not a fan bulging to a sphere-point that merely looks flat).
+    const panel = flattenFace(face);
     const positions: number[] = [];
     const normals: number[] = [];
-    const c = face.center;
-    const n = face.corners.length;
-    // one uniform normal per brick (outward radial) so each face reads as a
-    // single flat panel instead of fan-triangulated facets
-    const nx = c[0], ny = c[1], nz = c[2];
+    const ctr = panel.centroid;
+    const pn = panel.normal;
+    const n = panel.corners.length;
     for (let i = 0; i < n; i++) {
-      const a = face.corners[i];
-      const b = face.corners[(i + 1) % n];
-      positions.push(c[0] * r, c[1] * r, c[2] * r);
+      const a = panel.corners[i];
+      const b = panel.corners[(i + 1) % n];
+      positions.push(ctr[0] * r, ctr[1] * r, ctr[2] * r);
       positions.push(a[0] * r, a[1] * r, a[2] * r);
       positions.push(b[0] * r, b[1] * r, b[2] * r);
-      for (let k = 0; k < 3; k++) normals.push(nx, ny, nz);
+      for (let k = 0; k < 3; k++) normals.push(pn[0], pn[1], pn[2]);
     }
     const geom = new THREE.BufferGeometry();
     geom.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
@@ -61,13 +63,14 @@ export function buildDomeGroup(
     mesh.userData = { sides: face.sides, kind };
     group.add(mesh);
 
-    // brick outline (face boundary) so hex/pent edges are unmistakable
+    // brick outline (planar face boundary), nudged out to avoid z-fighting
     const edgePts: number[] = [];
+    const o = 1.002;
     for (let i = 0; i < n; i++) {
-      const a = face.corners[i];
-      const b = face.corners[(i + 1) % n];
-      edgePts.push(a[0] * r * 1.001, a[1] * r * 1.001, a[2] * r * 1.001);
-      edgePts.push(b[0] * r * 1.001, b[1] * r * 1.001, b[2] * r * 1.001);
+      const a = panel.corners[i];
+      const b = panel.corners[(i + 1) % n];
+      edgePts.push(a[0] * r * o, a[1] * r * o, a[2] * r * o);
+      edgePts.push(b[0] * r * o, b[1] * r * o, b[2] * r * o);
     }
     const eg = new THREE.BufferGeometry();
     eg.setAttribute('position', new THREE.Float32BufferAttribute(edgePts, 3));
