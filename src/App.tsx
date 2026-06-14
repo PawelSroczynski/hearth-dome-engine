@@ -40,9 +40,12 @@ export default function App() {
     renderer.setSize(el.clientWidth, el.clientHeight);
     renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
     el.appendChild(renderer.domElement);
-    scene.add(new THREE.HemisphereLight(0xffffff, 0x201810, 1.1));
-    const key = new THREE.DirectionalLight(0xffffff, 1.5);
+    scene.add(new THREE.HemisphereLight(0xfff2e6, 0x4a3c30, 1.35)); // lighter ground fill
+    scene.add(new THREE.AmbientLight(0xffffff, 0.35)); // floor so no brick goes black
+    const key = new THREE.DirectionalLight(0xffffff, 1.25);
     key.position.set(1, 1.5, 0.8); scene.add(key);
+    const fill = new THREE.DirectionalLight(0xffd9b3, 0.5); // opposite-side fill
+    fill.position.set(-1.2, 0.4, -0.9); scene.add(fill);
     const floor = new THREE.Mesh(
       new THREE.CircleGeometry(0.5, 64),
       new THREE.MeshStandardMaterial({ color: 0x2a2420, roughness: 1 }));
