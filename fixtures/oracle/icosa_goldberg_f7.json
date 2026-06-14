@@ -1,0 +1,38 @@
+{
+  "params": {
+    "symmetry": "icosa",
+    "pattern": "goldberg",
+    "frequency": 7
+  },
+  "outputs": {
+    "FREQUENCY": "7",
+    "INTERIOR Ø": "40″",
+    "BRICK THICKNESS": "4″",
+    "CUT ANGLE": "90° (20″ tall)",
+    "MORTAR GAP": "0.0″",
+    "ARCH HEIGHT": "2° (9″ from base)",
+    "ARCH WIDTH": "20° (16″ across)",
+    "ARCH DEPTH": "10″",
+    "CHIMNEY Ø": "6″",
+    "CHIMNEY HEIGHT": "12″",
+    "CHIMNEY IN/OUT": "0 mm",
+    "TOTAL BRICKS": "273",
+    "FULL BRICKS": "201",
+    "CUT BRICKS": "59",
+    "ARCH BRICKS": "13",
+    "UNIQUE SHAPES": "23",
+    "OUTER Ø": "48″",
+    "INNER Ø": "40″",
+    "FOOTPRINT Ø": "48″ (+0.6%)",
+    "WALL THICKNESS": "4″",
+    "DOME HEIGHT": "20″",
+    "FLOOR AREA": "8.8 ft²",
+    "COOK VOLUME": "9.8 ft³",
+    "SPHERE FACES": "492",
+    "PENTAGONS": "12",
+    "HEXAGONS": "480",
+    "COUNT ×": "2",
+    "MAX SPAN": "5.6″",
+    "EDGES": "2.5″ / 2.5″ / 2.5″ / 1.4″ / 1.9″ / 1.2″ / 1.9″ / 0.7″"
+  }
+}
