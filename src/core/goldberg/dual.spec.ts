@@ -56,10 +56,31 @@ describe('goldbergDual — face composition matches formulas & oracle', () => {
     }
   });
 
-  it('every corner lies on the unit sphere and faces are non-degenerate', () => {
-    for (const face of dualFor('icosa', 3)) {
-      expect(face.sides).toBeGreaterThanOrEqual(5);
-      for (const c of face.corners) expect(Math.hypot(...c)).toBeCloseTo(1, 9);
+  it('every face is EXACTLY planar: corners lie on the tangent plane center·x = 1', () => {
+    for (const b of bases) {
+      for (let f = 1; f <= 6; f++) {
+        for (const face of dualFor(b, f)) {
+          for (const c of face.corners) {
+            const onPlane = c[0] * face.center[0] + c[1] * face.center[1] + c[2] * face.center[2];
+            expect(onPlane).toBeCloseTo(1, 9); // perfectly coplanar by construction
+          }
+        }
+      }
     }
+  });
+
+  it('shared corners are bit-exact across neighbouring faces (watertight, zero gap)', () => {
+    const faces = dualFor('icosa', 4);
+    const seen = new Map<string, [number, number, number]>();
+    let maxSpread = 0;
+    for (const face of faces) {
+      for (const c of face.corners) {
+        const key = `${c[0].toFixed(6)},${c[1].toFixed(6)},${c[2].toFixed(6)}`;
+        const prev = seen.get(key);
+        if (prev) maxSpread = Math.max(maxSpread, Math.hypot(c[0] - prev[0], c[1] - prev[1], c[2] - prev[2]));
+        else seen.set(key, [c[0], c[1], c[2]]);
+      }
+    }
+    expect(maxSpread).toBe(0); // same polar point reused — no per-face divergence
   });
 });

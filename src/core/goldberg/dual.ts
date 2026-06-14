@@ -1,24 +1,35 @@
 import { normalize, type Mesh, type Vec3 } from '../solids/base';
 
 /**
- * Goldberg polyhedron as the dual of a geodesic (triangulated) sphere:
- *   - each geodesic FACE  -> a Goldberg VERTEX (face centroid on the sphere)
- *   - each geodesic VERTEX -> a Goldberg FACE (polygon of surrounding centroids)
- * A geodesic vertex of degree d yields a d-sided Goldberg face:
- * degree 6 -> hexagon, degree 5/4/3 -> pentagon/square/triangle (the corners).
+ * Goldberg polyhedron as the POLAR (reciprocal) dual of a geodesic sphere:
+ *   - each geodesic FACE  -> a Goldberg VERTEX = polar point of the face plane (n/d)
+ *   - each geodesic VERTEX v -> a Goldberg FACE lying exactly on the tangent
+ *     plane v·x = 1, so its corners are EXACTLY coplanar and EXACTLY shared with
+ *     the neighbouring faces. This makes the surface a clean, watertight,
+ *     planar-faced model (no per-face flattening / tape needed).
+ *
+ * Why coplanar: a geodesic triangle through vertex v has plane n·x = d with
+ * n·v = d, so its polar point n/d satisfies (n/d)·v = 1 — i.e. it lies on the
+ * tangent plane at v, together with every other polar point around v.
  */
 
 export interface GoldbergFace {
-  /** The originating geodesic vertex, on the unit sphere (face "center"). */
+  /** The originating geodesic vertex, on the unit sphere (face "center" & plane normal). */
   center: Vec3;
-  /** Polygon corners (geodesic face centroids), ordered around the center. */
+  /** Polygon corners (polar points), exactly coplanar on the tangent plane at center. */
   corners: Vec3[];
   sides: number;
 }
 
-function centroid(m: Mesh, [a, b, c]: readonly [number, number, number]): Vec3 {
+/** Polar point of a geodesic triangle's plane: n / d, n outward unit normal, d = n·A. */
+function polarPoint(m: Mesh, [a, b, c]: readonly [number, number, number]): Vec3 {
   const A = m.vertices[a], B = m.vertices[b], C = m.vertices[c];
-  return normalize([(A[0] + B[0] + C[0]) / 3, (A[1] + B[1] + C[1]) / 3, (A[2] + B[2] + C[2]) / 3]);
+  const ux = B[0] - A[0], uy = B[1] - A[1], uz = B[2] - A[2];
+  const vx = C[0] - A[0], vy = C[1] - A[1], vz = C[2] - A[2];
+  let n = normalize([uy * vz - uz * vy, uz * vx - ux * vz, ux * vy - uy * vx]);
+  let d = n[0] * A[0] + n[1] * A[1] + n[2] * A[2];
+  if (d < 0) { n = [-n[0], -n[1], -n[2]]; d = -d; } // outward
+  return [n[0] / d, n[1] / d, n[2] / d];
 }
 
 export function goldbergDual(mesh: Mesh): GoldbergFace[] {
@@ -30,7 +41,7 @@ export function goldbergDual(mesh: Mesh): GoldbergFace[] {
     incident[f[1]].push(fi);
     incident[f[2]].push(fi);
   });
-  const centroids = mesh.faces.map((f) => centroid(mesh, f));
+  const centroids = mesh.faces.map((f) => polarPoint(mesh, f));
 
   // For a vertex v, the "other two" vertices of an incident face define an edge.
   // Walk faces by shared neighbor vertex to order them cyclically (umbrella).
