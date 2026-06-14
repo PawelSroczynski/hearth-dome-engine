@@ -1,0 +1,162 @@
+{
+  "params": {
+    "symmetry": "icosa",
+    "frequency": 5,
+    "arch": false
+  },
+  "bricks": [
+    {
+      "label": "PENTAGON",
+      "sides": 5,
+      "count": 6,
+      "maxSpanIn": 5.7,
+      "edgesIn": [
+        3.4,
+        3.4,
+        3.4,
+        3.4,
+        3.4
+      ]
+    },
+    {
+      "label": "HEXAGON A",
+      "sides": 6,
+      "count": 30,
+      "maxSpanIn": 6.5,
+      "edgesIn": [
+        2.6,
+        3.4,
+        3.5,
+        3.4,
+        2.6,
+        3.4
+      ]
+    },
+    {
+      "label": "HEXAGON B",
+      "sides": 6,
+      "count": 20,
+      "maxSpanIn": 7.0,
+      "edgesIn": [
+        3.3,
+        3.5,
+        3.5,
+        3.5,
+        3.3,
+        3.5
+      ]
+    },
+    {
+      "label": "HEXAGON C",
+      "sides": 6,
+      "count": 25,
+      "maxSpanIn": 6.9,
+      "edgesIn": [
+        3.4,
+        3.3,
+        3.5,
+        3.5,
+        3.3,
+        3.4
+      ]
+    },
+    {
+      "label": "HEXAGON D",
+      "sides": 6,
+      "count": 20,
+      "maxSpanIn": 7.1,
+      "edgesIn": [
+        3.5,
+        3.5,
+        3.5,
+        3.5,
+        3.5,
+        3.5
+      ]
+    },
+    {
+      "label": "CUT A",
+      "sides": 3,
+      "count": 10,
+      "source": "Hexagon, clipped",
+      "maxSpanIn": 3.3,
+      "edgesIn": [
+        1.9,
+        3.2,
+        1.8
+      ]
+    },
+    {
+      "label": "CUT B",
+      "sides": 3,
+      "count": 5,
+      "source": "Hexagon, clipped",
+      "maxSpanIn": 3.6,
+      "edgesIn": [
+        2.1,
+        2.1,
+        3.6
+      ]
+    },
+    {
+      "label": "CUT C",
+      "sides": 3,
+      "count": 10,
+      "source": "Hexagon, clipped",
+      "maxSpanIn": 2.7,
+      "edgesIn": [
+        1.5,
+        1.6,
+        2.6
+      ]
+    },
+    {
+      "label": "CUT D",
+      "sides": 7,
+      "count": 10,
+      "source": "Hexagon, clipped",
+      "maxSpanIn": 7.3,
+      "edgesIn": [
+        3.3,
+        3.5,
+        1.8,
+        3.2,
+        1.6,
+        3.3,
+        3.5
+      ]
+    },
+    {
+      "label": "CUT E",
+      "sides": 7,
+      "count": 10,
+      "source": "Hexagon, clipped",
+      "maxSpanIn": 7.6,
+      "edgesIn": [
+        3.5,
+        3.5,
+        3.5,
+        2.1,
+        2.6,
+        1.9,
+        3.5
+      ]
+    },
+    {
+      "label": "CUT F",
+      "sides": 7,
+      "count": 5,
+      "source": "Hexagon, clipped",
+      "maxSpanIn": 7.0,
+      "edgesIn": [
+        1.5,
+        3.6,
+        1.5,
+        3.3,
+        3.4,
+        3.4,
+        3.3
+      ]
+    }
+  ]
+}

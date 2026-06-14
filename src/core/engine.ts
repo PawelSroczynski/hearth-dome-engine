@@ -2,6 +2,7 @@ import { subdivideGeodesic } from './solids/geodesic';
 import { goldbergDual, classifyFaces, type GoldbergFace } from './goldberg/dual';
 import { domeAxis, domeCounts } from './goldberg/hemisphere';
 import { domeSpecs, type DomeSpecs } from './bricks/specs';
+import { fullBrickShapes, type BrickShape } from './bricks/schedule';
 import type { BaseSolid } from './goldberg/formulas';
 import type { Vec3 } from './solids/base';
 
@@ -24,6 +25,9 @@ export interface OvenResult {
   sphereFaces: number;
   pentagons: number;
   hexagons: number;
+  /** unique full-brick shapes with cast counts */
+  shapes: BrickShape[];
+  uniqueShapes: number;
   specs: DomeSpecs;
 }
 
@@ -33,6 +37,7 @@ export function computeOven(p: OvenParams): OvenResult {
   const up = domeAxis(p.base);
   const { full, cut, total } = domeCounts(faces, up);
   const comp = classifyFaces(faces);
+  const shapes = fullBrickShapes(faces, up);
   return {
     faces,
     up,
@@ -42,6 +47,8 @@ export function computeOven(p: OvenParams): OvenResult {
     sphereFaces: faces.length,
     pentagons: comp[5] ?? 0,
     hexagons: comp[6] ?? 0,
+    shapes,
+    uniqueShapes: shapes.length,
     specs: domeSpecs({ interiorMm: p.interiorMm, thicknessMm: p.thicknessMm, cutAngleDeg: p.cutAngleDeg }),
   };
 }

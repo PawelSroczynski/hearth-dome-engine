@@ -1,0 +1,76 @@
+{
+  "params": {
+    "symmetry": "octa",
+    "frequency": 3,
+    "arch": false
+  },
+  "bricks": [
+    {
+      "label": "SQUARE",
+      "sides": 4,
+      "count": 1,
+      "maxSpanIn": 15.5,
+      "edgesIn": [
+        11.0,
+        11.0,
+        11.0,
+        11.0
+      ]
+    },
+    {
+      "label": "HEXAGON A",
+      "sides": 6,
+      "count": 8,
+      "maxSpanIn": 19.9,
+      "edgesIn": [
+        11.0,
+        6.5,
+        10.0,
+        11.3,
+        10.0,
+        6.5
+      ]
+    },
+    {
+      "label": "HEXAGON B",
+      "sides": 6,
+      "count": 4,
+      "maxSpanIn": 20.2,
+      "edgesIn": [
+        10.0,
+        10.0,
+        10.0,
+        10.0,
+        10.0,
+        10.0
+      ]
+    },
+    {
+      "label": "CUT A",
+      "sides": 4,
+      "count": 4,
+      "source": "Square, clipped",
+      "maxSpanIn": 12.3,
+      "edgesIn": [
+        5.5,
+        11.0,
+        5.5,
+        11.0
+      ]
+    },
+    {
+      "label": "CUT B",
+      "sides": 5,
+      "count": 8,
+      "source": "Hexagon, clipped",
+      "maxSpanIn": 16.9,
+      "edgesIn": [
+        6.5,
+        10.0,
+        5.6,
+        13.9,
+        5.5
+      ]
+    }
+  ]
+}

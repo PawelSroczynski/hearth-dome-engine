@@ -17,6 +17,16 @@ export function Readout({ r }: { r: OvenResult }) {
       <Row k="Total bricks" v={r.total} />
       <Row k="Full bricks" v={r.full} />
       <Row k="Cut bricks" v={r.cut} />
+      <Row k="Unique shapes" v={r.uniqueShapes} />
+      <div className="ro-sep" />
+      {r.shapes.map((s) => (
+        <div className="ro-brick" key={s.label}>
+          <span className="ro-brick-name">{s.label}</span>
+          <span className="ro-brick-meta">{s.sides}-sided</span>
+          <b>×{s.count}</b>
+        </div>
+      ))}
+      <div className="ro-note">Full bricks · cut-brick molds next</div>
       <div className="ro-sep" />
       <Row k="Sphere faces" v={r.sphereFaces} />
       <Row k="Pentagons" v={r.pentagons} />

@@ -1,0 +1,106 @@
+{
+  "params": {
+    "symmetry": "icosa",
+    "frequency": 4,
+    "arch": false
+  },
+  "bricks": [
+    {
+      "label": "PENTAGON",
+      "sides": 5,
+      "count": 6,
+      "maxSpanIn": 7.4,
+      "edgesIn": [
+        4.4,
+        4.4,
+        4.4,
+        4.4,
+        4.4
+      ]
+    },
+    {
+      "label": "HEXAGON A",
+      "sides": 6,
+      "count": 30,
+      "maxSpanIn": 8.4,
+      "edgesIn": [
+        3.5,
+        4.3,
+        4.5,
+        4.3,
+        3.5,
+        4.4
+      ]
+    },
+    {
+      "label": "HEXAGON B",
+      "sides": 6,
+      "count": 10,
+      "maxSpanIn": 8.8,
+      "edgesIn": [
+        4.3,
+        4.3,
+        4.5,
+        4.3,
+        4.3,
+        4.5
+      ]
+    },
+    {
+      "label": "HEXAGON C",
+      "sides": 6,
+      "count": 25,
+      "maxSpanIn": 8.8,
+      "edgesIn": [
+        4.3,
+        4.3,
+        4.5,
+        4.5,
+        4.3,
+        4.3
+      ]
+    },
+    {
+      "label": "CUT A",
+      "sides": 5,
+      "count": 10,
+      "source": "Hexagon, clipped",
+      "maxSpanIn": 8.4,
+      "edgesIn": [
+        4.3,
+        2.3,
+        7.6,
+        2.0,
+        4.5
+      ]
+    },
+    {
+      "label": "CUT B",
+      "sides": 5,
+      "count": 5,
+      "source": "Hexagon, clipped",
+      "maxSpanIn": 8.5,
+      "edgesIn": [
+        4.5,
+        4.5,
+        2.3,
+        7.6,
+        2.3
+      ]
+    },
+    {
+      "label": "CUT C",
+      "sides": 5,
+      "count": 5,
+      "source": "Hexagon, clipped",
+      "maxSpanIn": 8.2,
+      "edgesIn": [
+        2.0,
+        4.3,
+        4.3,
+        2.0,
+        7.6
+      ]
+    }
+  ]
+}

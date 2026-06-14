@@ -56,6 +56,11 @@ body { overflow: hidden; background: var(--bg); color: var(--ink); }
 .ro-row { display: flex; justify-content: space-between; align-items: baseline; font-size: 12.5px; color: rgba(236,227,214,0.7); padding: 3px 0; }
 .ro-row b { color: var(--ink); font-size: 14px; font-variant-numeric: tabular-nums; }
 .ro-sep { height: 1px; background: var(--line); margin: 8px 0; }
+.ro-brick { display: grid; grid-template-columns: 1fr auto auto; gap: 8px; align-items: baseline; padding: 2px 0; font-size: 12px; }
+.ro-brick-name { color: var(--ink); font-weight: 600; }
+.ro-brick-meta { color: rgba(236,227,214,0.4); font-size: 10px; }
+.ro-brick b { color: var(--accent); font-variant-numeric: tabular-nums; }
+.ro-note { font-size: 10px; color: rgba(236,227,214,0.4); margin-top: 6px; font-style: italic; }
 
 /* export bar */
 .bottom { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 10; }
