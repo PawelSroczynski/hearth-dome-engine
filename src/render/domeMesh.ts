@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import type { GoldbergFace } from '../core/goldberg/dual';
 import { classifyFace, type Classification } from '../core/goldberg/hemisphere';
 import { flattenFace } from '../core/bricks/panel';
+import { innerCorner, outerCorner } from '../core/bricks/brick';
 import type { Vec3 } from '../core/solids/base';
 
 export const BRICK_COLORS: Record<string, number> = {
@@ -31,8 +32,7 @@ export function buildDomeGroup(
   cut = 0,
 ): THREE.Group {
   const group = new THREE.Group();
-  const r = radiusMm / 1000;
-  const t = thicknessMm / 1000;
+  const hasThickness = thicknessMm > 0;
 
   for (const face of faces) {
     const kind = classifyFace(face, up, cut);
@@ -41,11 +41,12 @@ export function buildDomeGroup(
     const panel = flattenFace(face);
     const pn = panel.normal;
     const n = panel.corners.length;
-    // inner (on dome) and outer (offset by thickness) corner rings + centroids
-    const inner = panel.corners.map((c): Vec3 => [c[0] * r, c[1] * r, c[2] * r]);
-    const outer = inner.map((c): Vec3 => [c[0] + pn[0] * t, c[1] + pn[1] * t, c[2] + pn[2] * t]);
-    const ci: Vec3 = [panel.centroid[0] * r, panel.centroid[1] * r, panel.centroid[2] * r];
-    const co: Vec3 = [ci[0] + pn[0] * t, ci[1] + pn[1] * t, ci[2] + pn[2] * t];
+    // Inner/outer rings: offset is RADIAL per-corner (shared across all bricks
+    // touching the corner) -> outer shell stays watertight, no per-face gaps.
+    const inner = panel.corners.map((c): Vec3 => innerCorner(c, radiusMm));
+    const outer = panel.corners.map((c): Vec3 => outerCorner(c, radiusMm, thicknessMm));
+    const ci = innerCorner(panel.centroid, radiusMm);
+    const co = outerCorner(panel.centroid, radiusMm, thicknessMm);
 
     const pos: number[] = [];
     const nrm: number[] = [];
@@ -57,7 +58,7 @@ export function buildDomeGroup(
       const j = (i + 1) % n;
       // outer cap (outward normal)
       pushTri(co, outer[i], outer[j], pn);
-      if (t > 0) {
+      if (hasThickness) {
         // inner cap (inward normal, reversed winding)
         pushTri(ci, inner[j], inner[i], [-pn[0], -pn[1], -pn[2]]);
         // side wall quad (edge i->j): two triangles, normal = outward edge normal
@@ -81,7 +82,7 @@ export function buildDomeGroup(
 
     // outer-cap brick outline
     const edgePts: number[] = [];
-    const ring = t > 0 ? outer : inner;
+    const ring = hasThickness ? outer : inner;
     for (let i = 0; i < n; i++) { add(edgePts, ring[i], 1.0008); add(edgePts, ring[(i + 1) % n], 1.0008); }
     const eg = new THREE.BufferGeometry();
     eg.setAttribute('position', new THREE.Float32BufferAttribute(edgePts, 3));
