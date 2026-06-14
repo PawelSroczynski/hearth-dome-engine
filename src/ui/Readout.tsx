@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import type { OvenResult } from '../core/engine';
 import { inchRound, ft2Round, ft3Round } from '../core/bricks/specs';
+import { CollapseToggle } from './CollapseToggle';
 
 function Row({ k, v }: { k: string; v: string | number }) {
   return (
@@ -11,9 +13,14 @@ function Row({ k, v }: { k: string; v: string | number }) {
 }
 
 export function Readout({ r }: { r: OvenResult }) {
+  const [open, setOpen] = useState(true);
   return (
     <section className="panel readout">
-      <div className="panel-title">Brick Schedule</div>
+      <div className="panel-title">
+        Brick Schedule
+        <CollapseToggle open={open} onToggle={() => setOpen((o) => !o)} />
+      </div>
+      {!open ? null : <>
       <Row k="Total bricks" v={r.total} />
       <Row k="Full bricks" v={r.full} />
       <Row k="Cut bricks" v={r.cut} />
@@ -39,6 +46,7 @@ export function Readout({ r }: { r: OvenResult }) {
       <Row k="Dome height" v={`${inchRound(r.specs.heightMm)}″`} />
       <Row k="Floor area" v={`${ft2Round(r.specs.floorAreaM2)} ft²`} />
       <Row k="Cook volume" v={`${ft3Round(r.specs.cookVolumeM3)} ft³`} />
+      </>}
     </section>
   );
 }

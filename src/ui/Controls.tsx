@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import { useOven } from '../store';
+import { CollapseToggle } from './CollapseToggle';
 import type { BaseSolid } from '../core/goldberg/formulas';
 
 const BASES: { id: BaseSolid; label: string; sub: string }[] = [
@@ -26,9 +28,14 @@ const inches = (mm: number) => `${Math.round(mm / 25.4)}″`;
 
 export function Controls() {
   const s = useOven();
+  const [open, setOpen] = useState(true);
   return (
     <section className="panel controls">
-      <div className="panel-title">Dome Parameters</div>
+      <div className="panel-title">
+        Dome Parameters
+        <CollapseToggle open={open} onToggle={() => setOpen((o) => !o)} />
+      </div>
+      {!open ? null : <>
 
       <div className="seg-label">Symmetry</div>
       <div className="segmented">
@@ -47,6 +54,7 @@ export function Controls() {
         display={inches(s.thicknessMm)} onChange={(v) => s.set('thicknessMm', v)} />
       <Slider label="Cut Angle" value={s.cutAngleDeg} min={30} max={90} step={1}
         display={`${s.cutAngleDeg}°`} onChange={(v) => s.set('cutAngleDeg', v)} />
+      </>}
     </section>
   );
 }

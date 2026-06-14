@@ -30,8 +30,15 @@ body { overflow: hidden; background: var(--bg); color: var(--ink); }
 .left { position: absolute; top: 20px; left: 20px; width: min(310px, calc(100vw - 40px)); z-index: 10; }
 .right { position: absolute; top: 20px; right: 20px; width: min(260px, calc(100vw - 40px)); z-index: 10; }
 
-.panel-title { font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); margin-bottom: 12px; }
+.panel-title { font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .panel-title.mt { margin-top: 18px; }
+.collapse-btn {
+  width: 24px; height: 24px; flex: none; padding: 0;
+  border: 1px solid var(--line); border-radius: 7px;
+  background: transparent; color: var(--ink); font-size: 16px; font-weight: 700; line-height: 1;
+  cursor: pointer; display: grid; place-items: center; transition: all 0.15s;
+}
+.collapse-btn:hover { background: var(--accent); color: #1a120b; border-color: var(--accent); }
 
 /* controls */
 .seg-label { font-size: 11px; color: rgba(236,227,214,0.55); margin-bottom: 6px; }
