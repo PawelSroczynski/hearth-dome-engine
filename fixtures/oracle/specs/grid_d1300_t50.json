@@ -1,0 +1,21 @@
+{
+  "params": {
+    "interior_mm": 1300,
+    "thickness_mm": 50,
+    "angle": 90,
+    "mortar_mm": 0
+  },
+  "outputs": {
+    "INTERIOR Ø": "51″",
+    "BRICK THICKNESS": "2″",
+    "CUT ANGLE": "90° (26″ tall)",
+    "MORTAR GAP": "0.0″",
+    "OUTER Ø": "55″",
+    "INNER Ø": "51″",
+    "FOOTPRINT Ø": "56″ (+1.7%)",
+    "WALL THICKNESS": "2″",
+    "DOME HEIGHT": "26″",
+    "FLOOR AREA": "14.3 ft²",
+    "COOK VOLUME": "20.3 ft³"
+  }
+}
