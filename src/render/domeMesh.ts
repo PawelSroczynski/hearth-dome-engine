@@ -15,66 +15,77 @@ function colorFor(face: GoldbergFace, kind: Classification): number {
   return face.sides === 5 ? BRICK_COLORS.pentagon : BRICK_COLORS.hexagon;
 }
 
+const add = (arr: number[], v: Vec3, s: number) => arr.push(v[0] * s, v[1] * s, v[2] * s);
+
 /**
- * Build a Three.js group for the dome: one filled polygon mesh per kept brick
- * (fan-triangulated from the face centre), scaled to the inner radius.
- * `below` faces are dropped. Pure geometry — no renderer/DOM needed.
+ * Build the dome: one EXTRUDED brick per kept face. Each brick is a flat panel
+ * (planar polar-dual face) given real thickness — inner cap at the dome surface,
+ * outer cap offset outward by the brick thickness along the face normal, joined
+ * by side walls. `below` faces are dropped. Pure geometry — no DOM needed.
  */
 export function buildDomeGroup(
   faces: GoldbergFace[],
   up: Vec3,
   radiusMm: number,
+  thicknessMm = 0,
   cut = 0,
 ): THREE.Group {
   const group = new THREE.Group();
-  const r = radiusMm / 1000; // metres for sane scene units
+  const r = radiusMm / 1000;
+  const t = thicknessMm / 1000;
 
   for (const face of faces) {
     const kind = classifyFace(face, up, cut);
     if (kind === 'below') continue;
 
-    // FLAT brick: project corners to the face plane so the panel is genuinely
-    // planar (not a fan bulging to a sphere-point that merely looks flat).
     const panel = flattenFace(face);
-    const positions: number[] = [];
-    const normals: number[] = [];
-    const ctr = panel.centroid;
     const pn = panel.normal;
     const n = panel.corners.length;
+    // inner (on dome) and outer (offset by thickness) corner rings + centroids
+    const inner = panel.corners.map((c): Vec3 => [c[0] * r, c[1] * r, c[2] * r]);
+    const outer = inner.map((c): Vec3 => [c[0] + pn[0] * t, c[1] + pn[1] * t, c[2] + pn[2] * t]);
+    const ci: Vec3 = [panel.centroid[0] * r, panel.centroid[1] * r, panel.centroid[2] * r];
+    const co: Vec3 = [ci[0] + pn[0] * t, ci[1] + pn[1] * t, ci[2] + pn[2] * t];
+
+    const pos: number[] = [];
+    const nrm: number[] = [];
+    const pushTri = (p: Vec3, q: Vec3, s: Vec3, nv: Vec3) => {
+      add(pos, p, 1); add(pos, q, 1); add(pos, s, 1);
+      for (let k = 0; k < 3; k++) nrm.push(nv[0], nv[1], nv[2]);
+    };
     for (let i = 0; i < n; i++) {
-      const a = panel.corners[i];
-      const b = panel.corners[(i + 1) % n];
-      positions.push(ctr[0] * r, ctr[1] * r, ctr[2] * r);
-      positions.push(a[0] * r, a[1] * r, a[2] * r);
-      positions.push(b[0] * r, b[1] * r, b[2] * r);
-      for (let k = 0; k < 3; k++) normals.push(pn[0], pn[1], pn[2]);
+      const j = (i + 1) % n;
+      // outer cap (outward normal)
+      pushTri(co, outer[i], outer[j], pn);
+      if (t > 0) {
+        // inner cap (inward normal, reversed winding)
+        pushTri(ci, inner[j], inner[i], [-pn[0], -pn[1], -pn[2]]);
+        // side wall quad (edge i->j): two triangles, normal = outward edge normal
+        const ex = inner[j][0] - inner[i][0], ey = inner[j][1] - inner[i][1], ez = inner[j][2] - inner[i][2];
+        let snx = ey * pn[2] - ez * pn[1], sny = ez * pn[0] - ex * pn[2], snz = ex * pn[1] - ey * pn[0];
+        const sl = Math.hypot(snx, sny, snz) || 1; snx /= sl; sny /= sl; snz /= sl;
+        const sn: Vec3 = [snx, sny, snz];
+        pushTri(inner[i], inner[j], outer[j], sn);
+        pushTri(inner[i], outer[j], outer[i], sn);
+      }
     }
+
     const geom = new THREE.BufferGeometry();
-    geom.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-    geom.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3));
-    const mat = new THREE.MeshStandardMaterial({
-      color: colorFor(face, kind),
-      roughness: 0.85,
-      metalness: 0.0,
-      side: THREE.DoubleSide,
-      flatShading: false,
-    });
-    const mesh = new THREE.Mesh(geom, mat);
+    geom.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+    geom.setAttribute('normal', new THREE.Float32BufferAttribute(nrm, 3));
+    const mesh = new THREE.Mesh(geom, new THREE.MeshStandardMaterial({
+      color: colorFor(face, kind), roughness: 0.85, metalness: 0, flatShading: false,
+    }));
     mesh.userData = { sides: face.sides, kind };
     group.add(mesh);
 
-    // brick outline (planar face boundary), nudged out to avoid z-fighting
+    // outer-cap brick outline
     const edgePts: number[] = [];
-    const o = 1.002;
-    for (let i = 0; i < n; i++) {
-      const a = panel.corners[i];
-      const b = panel.corners[(i + 1) % n];
-      edgePts.push(a[0] * r * o, a[1] * r * o, a[2] * r * o);
-      edgePts.push(b[0] * r * o, b[1] * r * o, b[2] * r * o);
-    }
+    const ring = t > 0 ? outer : inner;
+    for (let i = 0; i < n; i++) { add(edgePts, ring[i], 1.0008); add(edgePts, ring[(i + 1) % n], 1.0008); }
     const eg = new THREE.BufferGeometry();
     eg.setAttribute('position', new THREE.Float32BufferAttribute(edgePts, 3));
-    group.add(new THREE.LineSegments(eg, new THREE.LineBasicMaterial({ color: 0x2a1c12, transparent: true, opacity: 0.55 })));
+    group.add(new THREE.LineSegments(eg, new THREE.LineBasicMaterial({ color: 0x2a1c12, transparent: true, opacity: 0.6 })));
   }
   return group;
 }

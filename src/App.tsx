@@ -78,7 +78,7 @@ export default function App() {
         if (o instanceof THREE.Mesh) { o.geometry.dispose(); (o.material as THREE.Material).dispose(); }
       });
     }
-    const dome = buildDomeGroup(result.faces, result.up, result.specs.innerDiaMm / 2);
+    const dome = buildDomeGroup(result.faces, result.up, result.specs.innerDiaMm / 2, result.specs.wallMm);
     alignUpToY(dome, result.up);
     ctx.scene.add(dome);
     ctx.dome = dome;
