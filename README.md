@@ -9,8 +9,20 @@ v1 is a 1:1 scrape of a minified production bundle — it runs, but the source i
 obfuscated and unmaintainable. v2 rebuilds the logic as readable, tested,
 owned code, verified against v1 as an **oracle** (golden tests).
 
-> Attribution: original concept "Goldberg Polyhedron Mold Engine" by geohack.xyz.
-> This is an independent reimplementation; no original source code was used.
+## Sources & attribution
+
+- **Original tool (v1):** the "Goldberg Polyhedron Mold Engine" published at
+  <https://geohack.xyz/pizza-oven>. v1 in this lineage is a 1:1 static mirror of
+  that site's **minified production bundle** (no readable source was available).
+- **Idea / concept origin:** the brick-dome mold approach this is based on —
+  <https://www.facebook.com/share/18tABi7Q2t/>.
+- **This repo (v2):** an **independent clean-room reimplementation**. The minified
+  v1 bundle was used only as a behavioural **oracle** (its on-screen outputs were
+  recorded into `fixtures/oracle/` and turned into golden tests). No original
+  source code was copied; all code here is written from the underlying geometry.
+
+Credit for the original concept and tool belongs to their respective authors;
+this project exists to make the logic understandable, testable, and maintainable.
 
 ## Architecture
 ```
