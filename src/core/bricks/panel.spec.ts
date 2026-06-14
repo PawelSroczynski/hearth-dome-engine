@@ -29,14 +29,14 @@ describe('flattenFace — bricks are genuinely planar', () => {
 
   it('projection moves corners only slightly (faces were near-planar)', () => {
     const faces = goldbergDual(subdivideGeodesic('icosa', 4));
-    let maxShift = 0;
+    let maxOffPlane = 0;
     for (const f of faces) {
       const p = flattenFace(f);
-      f.corners.forEach((orig, i) => {
-        maxShift = Math.max(maxShift, Math.hypot(
-          orig[0] - p.corners[i][0], orig[1] - p.corners[i][1], orig[2] - p.corners[i][2]));
-      });
+      // order-independent: perpendicular distance of each ORIGINAL corner to the plane
+      for (const orig of f.corners) {
+        maxOffPlane = Math.max(maxOffPlane, Math.abs(dot(sub(orig, p.centroid), p.normal)));
+      }
     }
-    expect(maxShift).toBeLessThan(0.05); // < 5% of unit radius
+    expect(maxOffPlane).toBeLessThan(0.05); // faces were near-planar (< 5% of unit radius)
   });
 });
