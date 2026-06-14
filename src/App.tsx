@@ -6,6 +6,8 @@ import { buildDomeGroup, alignUpToY } from './render/domeMesh';
 import { useOven } from './store';
 import { Controls } from './ui/Controls';
 import { Readout } from './ui/Readout';
+import { ExportBar } from './ui/ExportBar';
+import { SpecSheet } from './ui/SpecSheet';
 import './App.css';
 
 export default function App() {
@@ -91,6 +93,8 @@ export default function App() {
       </div>
       <div className="left"><Controls /></div>
       <div className="right"><Readout r={result} /></div>
+      <div className="bottom"><ExportBar params={params} result={result} /></div>
+      <SpecSheet params={params} result={result} />
     </div>
   );
 }
