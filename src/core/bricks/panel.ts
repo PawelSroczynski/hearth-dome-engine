@@ -38,10 +38,14 @@ export function flattenFace(face: GoldbergFace): FlatPanel {
     nx += x[0]; ny += x[1]; nz += x[2];
   }
   let normal = norm([nx, ny, nz]);
-  // ensure outward (point away from sphere centre / toward face centre)
+  // Consistent winding: if the corner order winds inward, reverse it so every
+  // panel is CCW as seen from outside. This keeps triangle winding and the
+  // outward normal in agreement (otherwise DoubleSide auto-flips the normal on
+  // the reversed faces and shades them as if lit from inside -> dark bricks).
+  const ordered = dot(normal, face.center) < 0 ? [...c].reverse() : c;
   if (dot(normal, face.center) < 0) normal = [-normal[0], -normal[1], -normal[2]];
 
-  const corners = c.map((p): Vec3 => {
+  const corners = ordered.map((p): Vec3 => {
     const d = dot(sub(p, centroid), normal);
     return [p[0] - d * normal[0], p[1] - d * normal[1], p[2] - d * normal[2]];
   });
