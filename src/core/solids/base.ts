@@ -16,12 +16,13 @@ export function normalize([x, y, z]: Vec3): Vec3 {
 const PHI = (1 + Math.sqrt(5)) / 2;
 
 /** Icosahedron — 12 vertices, 20 triangular faces. */
+const ICOSA_RAW: Vec3[] = [
+  [-1, PHI, 0], [1, PHI, 0], [-1, -PHI, 0], [1, -PHI, 0],
+  [0, -1, PHI], [0, 1, PHI], [0, -1, -PHI], [0, 1, -PHI],
+  [PHI, 0, -1], [PHI, 0, 1], [-PHI, 0, -1], [-PHI, 0, 1],
+];
 const ICOSA: Mesh = {
-  vertices: [
-    [-1, PHI, 0], [1, PHI, 0], [-1, -PHI, 0], [1, -PHI, 0],
-    [0, -1, PHI], [0, 1, PHI], [0, -1, -PHI], [0, 1, -PHI],
-    [PHI, 0, -1], [PHI, 0, 1], [-PHI, 0, -1], [-PHI, 0, 1],
-  ].map((v) => normalize(v as Vec3)),
+  vertices: ICOSA_RAW.map(normalize),
   faces: [
     [0, 11, 5], [0, 5, 1], [0, 1, 7], [0, 7, 10], [0, 10, 11],
     [1, 5, 9], [5, 11, 4], [11, 10, 2], [10, 7, 6], [7, 1, 8],
@@ -31,10 +32,11 @@ const ICOSA: Mesh = {
 };
 
 /** Octahedron — 6 vertices, 8 triangular faces. */
+const OCTA_RAW: Vec3[] = [
+  [1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1],
+];
 const OCTA: Mesh = {
-  vertices: [
-    [1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1],
-  ],
+  vertices: OCTA_RAW.map(normalize),
   faces: [
     [0, 2, 4], [2, 1, 4], [1, 3, 4], [3, 0, 4],
     [2, 0, 5], [1, 2, 5], [3, 1, 5], [0, 3, 5],
@@ -42,10 +44,11 @@ const OCTA: Mesh = {
 };
 
 /** Tetrahedron — 4 vertices, 4 triangular faces. */
+const TETRA_RAW: Vec3[] = [
+  [1, 1, 1], [1, -1, -1], [-1, 1, -1], [-1, -1, 1],
+];
 const TETRA: Mesh = {
-  vertices: [
-    [1, 1, 1], [1, -1, -1], [-1, 1, -1], [-1, -1, 1],
-  ].map((v) => normalize(v as Vec3)),
+  vertices: TETRA_RAW.map(normalize),
   faces: [
     [0, 1, 2], [0, 3, 1], [0, 2, 3], [1, 3, 2],
   ],
