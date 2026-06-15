@@ -131,9 +131,14 @@ function addColumn(out: Panel[], x: number, w: number, y0: number, y1: number, t
   }
 }
 
-export interface BomRow { type: PanelType; w: number; h: number; count: number; ok: boolean }
+export interface BomRow { type: PanelType; label: string; w: number; h: number; count: number; ok: boolean }
 
-/** Bill of materials: group identical panels (type + rounded w×h). Voids excluded. */
+/**
+ * Bill of materials: group identical panels (type + rounded w×h). Voids excluded.
+ * Each distinct size gets its own typological label — a single size keeps the bare
+ * type name ("Standard"), several sizes of one type are suffixed A/B/C… (ordered by
+ * count, then larger first), so a panel with individual dimensions has its own name.
+ */
 export function wallBom(panels: Panel[]): BomRow[] {
   const map = new Map<string, BomRow>();
   for (const p of panels) {
@@ -142,7 +147,16 @@ export function wallBom(panels: Panel[]): BomRow[] {
     const key = `${p.type}:${w}x${h}`;
     const row = map.get(key);
     if (row) row.count++;
-    else map.set(key, { type: p.type, w, h, count: 1, ok: p.ok });
+    else map.set(key, { type: p.type, label: '', w, h, count: 1, ok: p.ok });
   }
-  return [...map.values()].sort((a, b) => a.type.localeCompare(b.type) || b.count - a.count);
+  const rows = [...map.values()];
+  const cap = (t: string) => t.charAt(0).toUpperCase() + t.slice(1);
+  for (const type of new Set(rows.map((r) => r.type))) {
+    const group = rows.filter((r) => r.type === type)
+      .sort((a, b) => b.count - a.count || b.w * b.h - a.w * a.h);
+    group.forEach((r, i) => {
+      r.label = group.length > 1 ? `${cap(type)} ${String.fromCharCode(65 + i)}` : cap(type);
+    });
+  }
+  return rows.sort((a, b) => a.type.localeCompare(b.type) || b.count - a.count);
 }

@@ -98,7 +98,7 @@ export function PanelDetail() {
   return (
     <section className="panel detail">
       <div className="detail-head">
-        <span>PANEL · {pick ? pick.type.toUpperCase() : '—'}</span>
+        <span>PANEL · {pick ? pick.label.toUpperCase() : '—'}</span>
         <span className="detail-sub">click a panel · drag orbit · scroll zoom</span>
       </div>
       <div className="detail-bar">

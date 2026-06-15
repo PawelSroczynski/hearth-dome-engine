@@ -16,6 +16,8 @@ import { BrickDetail } from './ui/BrickDetail';
 import { WallControls } from './ui/WallControls';
 import { WallReadout } from './ui/WallReadout';
 import { PanelDetail } from './ui/PanelDetail';
+import { WallExportBar } from './ui/WallExportBar';
+import { WallSpecSheet } from './ui/WallSpecSheet';
 import './App.css';
 
 export default function App() {
@@ -200,7 +202,11 @@ export default function App() {
       <div className="left">{isWall ? <WallControls /> : <Controls />}</div>
       <div className="right">{isWall ? <WallReadout /> : <Readout r={result} />}</div>
       {isWall
-        ? <div className="detail-dock"><PanelDetail /></div>
+        ? <>
+            <div className="detail-dock"><PanelDetail /></div>
+            <div className="bottom"><WallExportBar /></div>
+            <WallSpecSheet />
+          </>
         : <>
             <div className="detail-dock"><BrickDetail r={result} /></div>
             <div className="bottom"><ExportBar params={params} result={result} /></div>

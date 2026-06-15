@@ -43,7 +43,7 @@ export function WallReadout() {
             <div className={`ro-brick${selected === key ? ' sel' : ''}`} key={key}
               onClick={() => setSelected(key)}>
               <div className="ro-brick-line">
-                <span className="ro-brick-name">{r.type}</span>
+                <span className="ro-brick-name">{r.label}</span>
                 <b>×{r.count}</b>
               </div>
               <span className="ro-brick-meta">{r.w} × {r.h} mm {r.ok ? '' : '· out of range'}</span>
