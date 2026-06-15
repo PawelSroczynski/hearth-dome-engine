@@ -158,7 +158,10 @@ export default function App() {
       ctx.controls.target.set(0, 0.2, 0);
     }
     ctx.controls.update();
-  }, [construction, wall.lengthMm, wall.depthMm, wall.heightMm]);
+    // frame only when the construction TYPE changes — not on every resize, so the
+    // user's orbit is preserved while dragging size sliders.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [construction]);
 
   // highlight the selected shape type
   useEffect(() => {
