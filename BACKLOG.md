@@ -27,6 +27,17 @@ Legend: 🔴 high · 🟡 medium · 🟢 low · ✅ done
 - 🟡 **Cut angle affects 3D + counts (#15)** — currently only 90° hemisphere in 3D.
 - 🟡 **2D net / unfold** — flattened brick pattern for cutting. Reference: acidome
   `Looker.pointToPlane` / `planeToPoint`.
+- 🟡 **Symmetry-axis seating (pentad / diad / triad)** — rotate the base solid so a
+  chosen symmetry axis is vertical *before* subdivision (acidome pattern: `Figure.js`
+  `switch(params.symmetry)` → `rotate(atan(a/b))` pentad, `asin(2/(√3+√15))` triad).
+  Changes the mesh (apex element, brick shapes, counts, cuts) — it is **geometry, not
+  presentation**. Measured on icosa GP(4,0), visible (upper) pentagon orientation:
+  **pentad → 5 vertex-down / 0 edge-down** (pentagon apex; "inverted pentagram",
+  unavoidable by rotation — azimuth flips 0/12); **diad → 2/2**; **triad → 0/6
+  edge-down** (every visible pentagon has its bottom edge parallel to the base; apex
+  becomes a face/hex). Default stays pentad; triad is the option when "pentagon edge
+  parallel to base" is required. TDD: Euler/watertight + "triad ⇒ each visible pentagon's
+  two lowest corners share z".
 - 🟢 **Tetra hemisphere calibration** — tetra base axis/cut not calibrated.
 - 🟢 **Geodesic-triangle overlay (#20)** — show the underlying geodesic mesh.
 - 🟢 **Mortar slider** — gap between bricks.
