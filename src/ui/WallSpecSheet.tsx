@@ -1,30 +1,37 @@
 import { useOven } from '../store';
 import { wallBom, THICKNESS_MIN, THICKNESS_MAX } from '../core/wall/panelize';
-import { buildingFromWall, allWallPanels } from '../core/building/model';
+import { buildingFromWall, allWallPanels, floorCassettes } from '../core/building/model';
 
-/** Printable build document for the StrawPanel wall (hidden on screen, @media print). */
+/** Printable build document for the StrawPanel building (hidden on screen, @media print). */
 export function WallSpecSheet() {
   const wall = useOven((s) => s.wall);
   const rate = useOven((s) => s.wallRateEur);
+  const floorRate = useOven((s) => s.floorRateEur);
+  const floorModuleMm = useOven((s) => s.floorModuleMm);
+  const floorThicknessMm = useOven((s) => s.floorThicknessMm);
+  const floorSpanAxis = useOven((s) => s.floorSpanAxis);
   const images = useOven((s) => s.specImages);
   const depth = wall.depthMm ?? 4000;
   const date = new Date().toISOString().slice(0, 10);
 
-  const panels = allWallPanels(buildingFromWall(wall, depth));
-  const bom = wallBom(panels);
-  const solid = panels.filter((p) => p.type !== 'void');
-  const panelAreaM2 = solid.reduce((s, p) => s + p.w * p.h, 0) / 1e6;
+  const model = buildingFromWall(wall, depth, { moduleWidthMm: floorModuleMm, thicknessMm: floorThicknessMm, spanAxis: floorSpanAxis });
+  const wpanels = allWallPanels(model).filter((p) => p.type !== 'void');
+  const fpanels = floorCassettes(model);
+  const bom = wallBom([...wpanels, ...fpanels]);
+  const solid = [...wpanels, ...fpanels];
+  const wallPanelM2 = wpanels.reduce((s, p) => s + p.w * p.h, 0) / 1e6;
+  const floorM2 = fpanels.reduce((s, p) => s + p.w * p.h, 0) / 1e6;
   const wallAreaM2 = (2 * (wall.lengthMm + depth) * wall.heightMm) / 1e6;
-  const cost = panelAreaM2 * rate;
+  const wallCost = wallPanelM2 * rate, floorCost = floorM2 * floorRate, cost = wallCost + floorCost;
   const flagged = solid.filter((p) => !p.ok).length;
   const thicknessOk = wall.thicknessMm >= THICKNESS_MIN && wall.thicknessMm <= THICKNESS_MAX;
 
   return (
     <div className="specsheet">
       <header className="ss-title">
-        <h1>StrawPanel Wall — Build Document</h1>
+        <h1>StrawPanel Building — Build Document</h1>
         <p className="ss-sub">
-          {wall.lengthMm}×{depth} mm footprint · {wall.heightMm} mm high · {solid.length} panels · {bom.length} types · generated {date}
+          {wall.lengthMm}×{depth} mm footprint · {wall.heightMm} mm high · {solid.length} panels (walls + floor) · {bom.length} types · generated {date}
         </p>
       </header>
 
@@ -56,9 +63,10 @@ export function WallSpecSheet() {
       <section className="ss-sec">
         <h2>2 · Building specifications</h2>
         <table><tbody>
-          <tr><td>Wall area (4-wall shell)</td><td>{wallAreaM2.toFixed(1)} m²</td></tr>
-          <tr><td>Net panel area</td><td>{panelAreaM2.toFixed(1)} m²</td></tr>
-          <tr><td>Panels</td><td>{solid.length}</td></tr>
+          <tr><td>Wall shell area</td><td>{wallAreaM2.toFixed(1)} m²</td></tr>
+          <tr><td>Wall panel area</td><td>{wallPanelM2.toFixed(1)} m²</td></tr>
+          <tr><td>Floor area</td><td>{floorM2.toFixed(1)} m²</td></tr>
+          <tr><td>Panels (walls + floor)</td><td>{solid.length}</td></tr>
           <tr><td>Unique types</td><td>{bom.length}</td></tr>
           <tr><td>Out of range</td><td>{flagged}</td></tr>
         </tbody></table>
@@ -73,9 +81,13 @@ export function WallSpecSheet() {
           exactly and are checked against EcoCocon size ranges (standard 400–850 × 400–3000 mm;
           lintel/sill height 424–850 mm). Out-of-range panels are flagged.
         </p>
+        <p>
+          The floor (posadzka) is tiled with modular cassettes ({floorModuleMm} mm module,
+          {floorThicknessMm} mm thick) covering the footprint.
+        </p>
         <p className="ss-note">
-          Scope: walls only (the 4-wall shell). Floor and roof panelization are planned but
-          not part of this document. Corners are butt joints (node detailing pending).
+          Scope: 4-wall shell + floor. Roof panelization is planned. Corners are butt
+          joints (node detailing pending). Floor cassettes are our catalog (not native EcoCocon).
         </p>
       </section>
 
@@ -103,9 +115,9 @@ export function WallSpecSheet() {
       <section className="ss-sec">
         <h2>5 · Cost estimate</h2>
         <table><tbody>
-          <tr><td>Rate (assumption)</td><td>€{rate}/m²</td></tr>
-          <tr><td>Net panel area</td><td>{panelAreaM2.toFixed(1)} m²</td></tr>
-          <tr><td><b>Total (panels)</b></td><td><b>€{Math.round(cost).toLocaleString()}</b></td></tr>
+          <tr><td>Walls — {wallPanelM2.toFixed(1)} m² × €{rate}/m²</td><td>€{Math.round(wallCost).toLocaleString()}</td></tr>
+          <tr><td>Floor — {floorM2.toFixed(1)} m² × €{floorRate}/m²</td><td>€{Math.round(floorCost).toLocaleString()}</td></tr>
+          <tr><td><b>Total</b></td><td><b>€{Math.round(cost).toLocaleString()}</b></td></tr>
         </tbody></table>
         <p className="ss-note">
           Estimate = panel area × rate. Rate is an editable assumption (EcoCocon prices by

@@ -43,6 +43,9 @@ export default function App() {
   const view = useOven((s) => s.view);
   const mouldWallMm = useOven((s) => s.mouldWallMm);
   const mouldFlangeMm = useOven((s) => s.mouldFlangeMm);
+  const floorModuleMm = useOven((s) => s.floorModuleMm);
+  const floorThicknessMm = useOven((s) => s.floorThicknessMm);
+  const floorSpanAxis = useOven((s) => s.floorSpanAxis);
   const params = useMemo<OvenParams>(
     () => ({ base, frequency, subdivisionClass, classIIIn: classIIInVal, interiorMm, thicknessMm, cutAngleDeg }),
     [base, frequency, subdivisionClass, classIIInVal, interiorMm, thicknessMm, cutAngleDeg],
@@ -125,8 +128,11 @@ export default function App() {
     let group: THREE.Group;
     let floorR = 0.5;
     if (construction === 'wall') {
-      group = buildBuildingGroup(buildingFromWall(wall, wall.depthMm ?? 4000));
-      floorR = Math.max(wall.lengthMm, wall.depthMm ?? 4000) / 1000 * 0.85;
+      const depth = wall.depthMm ?? 4000;
+      group = buildBuildingGroup(buildingFromWall(wall, depth,
+        { moduleWidthMm: floorModuleMm, thicknessMm: floorThicknessMm, spanAxis: floorSpanAxis }));
+      floorR = Math.max(wall.lengthMm, depth) / 1000 * 0.85;
+      ctx.floor.position.y = -(floorThicknessMm / 1000) - 0.02; // decorative disc below the slab
     } else if (view === 'mould') {
       group = buildMouldGroup(result.shapes, {
         innerRMm: result.specs.innerDiaMm / 2, thicknessMm: result.specs.wallMm,
@@ -141,9 +147,10 @@ export default function App() {
     }
     ctx.scene.add(group);
     ctx.dome = group;
+    if (construction !== 'wall') ctx.floor.position.y = 0;
     ctx.floor.geometry.dispose();
     ctx.floor.geometry = new THREE.CircleGeometry(floorR, 64);
-  }, [result, view, mouldWallMm, mouldFlangeMm, construction, wall]);
+  }, [result, view, mouldWallMm, mouldFlangeMm, construction, wall, floorModuleMm, floorThicknessMm, floorSpanAxis]);
 
   // reframe the camera when switching construction type
   useEffect(() => {
@@ -151,10 +158,10 @@ export default function App() {
     if (!ctx) return;
     if (construction === 'wall') {
       const sizeM = Math.max(wall.lengthMm, wall.depthMm ?? 4000) / 1000, hM = wall.heightMm / 1000;
-      const d = sizeM * 0.95 + 2;
-      // 3/4 view from the front-right corner so the door/window wall (edge at -z) is visible
-      ctx.camera.position.set(d * 0.7, hM * 1.0, -d * 0.75);
-      ctx.controls.target.set(0, hM * 0.4, 0);
+      const d = sizeM * 1.3 + 3; // a bit further out
+      // elevated 3/4 view (from above, front-right corner; door/window wall at -z)
+      ctx.camera.position.set(d * 0.62, d * 0.6, -d * 0.7);
+      ctx.controls.target.set(0, hM * 0.3, 0);
     } else {
       ctx.camera.position.set(0.95, 0.75, 1.15);
       ctx.controls.target.set(0, 0.2, 0);

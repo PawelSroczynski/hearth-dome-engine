@@ -24,6 +24,10 @@ interface OvenStore extends OvenParams {
   construction: Construction;
   wall: WallSpec;
   wallRateEur: number; // assumed €/m² of net panel area (editable estimate)
+  floorModuleMm: number;
+  floorThicknessMm: number;
+  floorSpanAxis: 'x' | 'y';
+  floorRateEur: number;
   set: <K extends keyof OvenParams>(key: K, value: OvenParams[K]) => void;
   setBase: (b: BaseSolid) => void;
   setView: (v: ViewMode) => void;
@@ -34,6 +38,8 @@ interface OvenStore extends OvenParams {
   setWall: (key: 'lengthMm' | 'heightMm' | 'thicknessMm' | 'targetWidthMm' | 'depthMm', value: number) => void;
   setOpening: (index: number, patch: Partial<Opening>) => void;
   setWallRate: (eurPerM2: number) => void;
+  setFloor: (key: 'floorModuleMm' | 'floorThicknessMm' | 'floorRateEur', value: number) => void;
+  setFloorAxis: (a: 'x' | 'y') => void;
 }
 
 export const useOven = create<OvenStore>((set) => ({
@@ -46,6 +52,10 @@ export const useOven = create<OvenStore>((set) => ({
   construction: 'dome',
   wall: DEFAULT_WALL,
   wallRateEur: 250,
+  floorModuleMm: 800,
+  floorThicknessMm: 240,
+  floorSpanAxis: 'y',
+  floorRateEur: 120,
   set: (key, value) => set({ [key]: value } as Partial<OvenParams>),
   setBase: (base) => set({ base }),
   setView: (view) => set({ view }),
@@ -58,4 +68,6 @@ export const useOven = create<OvenStore>((set) => ({
     wall: { ...s.wall, openings: s.wall.openings.map((o, i) => (i === index ? { ...o, ...patch } : o)) },
   })),
   setWallRate: (wallRateEur) => set({ wallRateEur }),
+  setFloor: (key, value) => set({ [key]: value }),
+  setFloorAxis: (floorSpanAxis) => set({ floorSpanAxis }),
 }));

@@ -22,7 +22,10 @@ roof from the roof spec. BOM + cost aggregate across all elements.
   `wallPlacements`, `buildBuildingGroup` render all 4 walls in 3D; Depth slider; BOM +
   cost aggregate over the whole shell; panel picking/detail across all walls. Corners
   are butt joints for now (node solving = Phase 5).
-- 🟡 **Phase 3 — floor slab**: footprint polygon → modular floor cassettes (grid).
+- ✅ **Phase 3 — floor slab**: `core/floor/floorize` tiles the footprint into modular
+  cassettes (module width, span axis, ≤6000 mm segments), rendered as flat slabs under
+  the shell; cassette type in the combined BOM (Cassette A/B…), floor area + separate
+  €/m² floor rate in cost; included in Spec PDF. Floor cassettes = our catalog.
 - 🟡 **Phase 4 — roof**: gable/mono → sloped faces → panelize (inclined panel types).
 - 🔴 **Phase 5 — junctions / node solving**: corner Column (C), eaves, base — the hard
   3D joints (leverage acidome `Connector` / `Plane.average` / miter). Don't under-scope.

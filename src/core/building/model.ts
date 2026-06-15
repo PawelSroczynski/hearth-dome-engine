@@ -1,4 +1,5 @@
 import { panelizeSurface, type Opening, type SurfaceSpec, type WallSpec, type Panel } from '../wall/panelize';
+import { floorize } from '../floor/floorize';
 
 /**
  * Building model (Phase 0) — single source of truth from which every modular
@@ -74,7 +75,7 @@ export function allWallPanels(m: BuildingModel): Panel[] {
 }
 
 /** Rectangular building shell from the single-wall store params (front edge holds openings). */
-export function buildingFromWall(wall: WallSpec, depthMm: number): BuildingModel {
+export function buildingFromWall(wall: WallSpec, depthMm: number, floor?: FloorSpec): BuildingModel {
   return {
     footprint: rectangleFootprint(wall.lengthMm, depthMm),
     wallHeightMm: wall.heightMm,
@@ -82,8 +83,20 @@ export function buildingFromWall(wall: WallSpec, depthMm: number): BuildingModel
     targetWidthMm: wall.targetWidthMm,
     openingsByEdge: [wall.openings, [], [], []],
     roof: { type: 'flat', pitchDeg: 0, ridgeAxis: 'x' },
-    floor: { moduleWidthMm: 800, thicknessMm: 240, spanAxis: 'y' },
+    floor: floor ?? { moduleWidthMm: 800, thicknessMm: 240, spanAxis: 'y' },
   };
+}
+
+/** Footprint bounding box dimensions (mm). */
+export function footprintBBox(f: Footprint): { L: number; D: number } {
+  const xs = f.points.map((p) => p.x), ys = f.points.map((p) => p.y);
+  return { L: Math.max(...xs) - Math.min(...xs), D: Math.max(...ys) - Math.min(...ys) };
+}
+
+/** Floor cassettes tiling the footprint (plan coords). */
+export function floorCassettes(m: BuildingModel): Panel[] {
+  const { L, D } = footprintBBox(m.footprint);
+  return floorize(L, D, m.floor.moduleWidthMm, m.floor.spanAxis);
 }
 
 export function footprintCenter(f: Footprint): Vec2 {

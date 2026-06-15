@@ -59,9 +59,25 @@ export function WallControls() {
         <Slider label="Window head" value={win.headH} min={1800} max={2400} step={50}
           display={mm(win.headH)} onChange={(v) => s.setOpening(1, { headH: v })} />
 
+        <div className="seg-label">Floor (posadzka)</div>
+        <Slider label="Cassette module" value={s.floorModuleMm} min={300} max={1200} step={50}
+          display={mm(s.floorModuleMm)} onChange={(v) => s.setFloor('floorModuleMm', v)} />
+        <Slider label="Floor thickness" value={s.floorThicknessMm} min={150} max={400} step={10}
+          display={mm(s.floorThicknessMm)} onChange={(v) => s.setFloor('floorThicknessMm', v)} />
+        <div className="segmented" style={{ gridTemplateColumns: '1fr 1fr' }}>
+          <button className={s.floorSpanAxis === 'y' ? 'on' : ''} onClick={() => s.setFloorAxis('y')}>
+            <span>Span ↕</span><em>depth</em>
+          </button>
+          <button className={s.floorSpanAxis === 'x' ? 'on' : ''} onClick={() => s.setFloorAxis('x')}>
+            <span>Span ↔</span><em>length</em>
+          </button>
+        </div>
+
         <div className="seg-label">Cost estimate</div>
-        <Slider label="Rate (assumption)" value={s.wallRateEur} min={100} max={600} step={10}
+        <Slider label="Wall rate" value={s.wallRateEur} min={100} max={600} step={10}
           display={`€${s.wallRateEur}/m²`} onChange={(v) => s.setWallRate(v)} />
+        <Slider label="Floor rate" value={s.floorRateEur} min={50} max={400} step={10}
+          display={`€${s.floorRateEur}/m²`} onChange={(v) => s.setFloor('floorRateEur', v)} />
       </>}
     </section>
   );

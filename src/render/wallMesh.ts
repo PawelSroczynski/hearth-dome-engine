@@ -5,6 +5,7 @@ export const PANEL_COLORS: Record<string, number> = {
   standard: 0xd9b27a, // straw clay
   lintel: 0xc24d2c,   // terracotta (over openings)
   sill: 0x8a9a5b,     // olive (under windows)
+  cassette: 0x9c7b52, // floor cassette (timber)
   bad: 0x9c3b2c,      // out-of-range flag
 };
 

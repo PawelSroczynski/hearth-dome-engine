@@ -14,7 +14,7 @@
  *   thickness 300–400 mm
  */
 
-export type PanelType = 'standard' | 'lintel' | 'sill' | 'void';
+export type PanelType = 'standard' | 'lintel' | 'sill' | 'cassette' | 'void';
 
 export interface Opening {
   x: number;      // left edge from wall start (mm)
@@ -55,6 +55,7 @@ export const PANEL_LIMITS: Record<Exclude<PanelType, 'void'>, { wMin: number; wM
   standard: { wMin: 400, wMax: 850, hMin: 400, hMax: 3000 },
   lintel: { wMin: 400, wMax: 3000, hMin: 424, hMax: 850 },
   sill: { wMin: 600, wMax: 3000, hMin: 424, hMax: 850 },
+  cassette: { wMin: 300, wMax: 1200, hMin: 400, hMax: 6000 }, // floor cassette (our catalog)
 };
 export const THICKNESS_MIN = 300;
 export const THICKNESS_MAX = 400;

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useOven } from '../store';
 import { wallBom, THICKNESS_MIN, THICKNESS_MAX } from '../core/wall/panelize';
-import { buildingFromWall, allWallPanels } from '../core/building/model';
+import { buildingFromWall, allWallPanels, floorCassettes } from '../core/building/model';
 import { CollapseToggle } from './CollapseToggle';
 
 function Row({ k, v }: { k: string; v: string | number }) {
@@ -12,18 +12,25 @@ const m2 = (mm2: number) => `${(mm2 / 1e6).toFixed(1)} m²`;
 export function WallReadout() {
   const wall = useOven((s) => s.wall);
   const rate = useOven((s) => s.wallRateEur);
+  const floorRate = useOven((s) => s.floorRateEur);
+  const floorModuleMm = useOven((s) => s.floorModuleMm);
+  const floorThicknessMm = useOven((s) => s.floorThicknessMm);
+  const floorSpanAxis = useOven((s) => s.floorSpanAxis);
   const selected = useOven((s) => s.selected);
   const setSelected = useOven((s) => s.setSelected);
   const [open, setOpen] = useState(true);
   const depth = wall.depthMm ?? 4000;
-  const panels = allWallPanels(buildingFromWall(wall, depth));
-  const bom = wallBom(panels);
-  const solid = panels.filter((p) => p.type !== 'void');
+  const model = buildingFromWall(wall, depth, { moduleWidthMm: floorModuleMm, thicknessMm: floorThicknessMm, spanAxis: floorSpanAxis });
+  const wpanels = allWallPanels(model).filter((p) => p.type !== 'void');
+  const fpanels = floorCassettes(model);
+  const bom = wallBom([...wpanels, ...fpanels]);
+  const solid = [...wpanels, ...fpanels];
   const flagged = solid.filter((p) => !p.ok).length;
   const wallArea = 2 * (wall.lengthMm + depth) * wall.heightMm; // 4-wall shell
-  const openArea = wall.openings.reduce((s, o) => s + o.w * Math.max(0, o.headH - o.sillH), 0);
-  const panelAreaM2 = solid.reduce((s, p) => s + p.w * p.h, 0) / 1e6; // exactly what's on screen
-  const cost = panelAreaM2 * rate;
+  const wallPanelM2 = wpanels.reduce((s, p) => s + p.w * p.h, 0) / 1e6;
+  const floorM2 = fpanels.reduce((s, p) => s + p.w * p.h, 0) / 1e6;
+  const wallCost = wallPanelM2 * rate, floorCost = floorM2 * floorRate;
+  const cost = wallCost + floorCost;
   const thicknessOk = wall.thicknessMm >= THICKNESS_MIN && wall.thicknessMm <= THICKNESS_MAX;
 
   return (
@@ -52,14 +59,15 @@ export function WallReadout() {
         })}
         <div className="ro-note">EcoCocon straw panels · L over openings · S under windows</div>
         <div className="ro-sep" />
-        <Row k="Wall area" v={m2(wallArea)} />
-        <Row k="Openings" v={m2(openArea)} />
-        <Row k="Panel area (3D)" v={`${panelAreaM2.toFixed(1)} m²`} />
+        <Row k="Wall shell area" v={m2(wallArea)} />
+        <Row k="Wall panel area" v={`${wallPanelM2.toFixed(1)} m²`} />
+        <Row k="Floor area" v={`${floorM2.toFixed(1)} m²`} />
         <Row k="Thickness" v={`${wall.thicknessMm} mm ${thicknessOk ? '' : '⚠'}`} />
         <div className="panel-title mt">Estimated cost</div>
-        <Row k="Rate" v={`€${rate}/m²`} />
-        <div className="ro-row"><span>Total (panels)</span><b style={{ color: 'var(--accent)', fontSize: '15px' }}>€{Math.round(cost).toLocaleString()}</b></div>
-        <div className="ro-note">Estimate = panel area × rate. Rate is an editable assumption (EcoCocon prices by exterior wall area excl. openings); set your supplier’s rate.</div>
+        <Row k={`Walls · €${rate}/m²`} v={`€${Math.round(wallCost).toLocaleString()}`} />
+        <Row k={`Floor · €${floorRate}/m²`} v={`€${Math.round(floorCost).toLocaleString()}`} />
+        <div className="ro-row"><span>Total</span><b style={{ color: 'var(--accent)', fontSize: '15px' }}>€{Math.round(cost).toLocaleString()}</b></div>
+        <div className="ro-note">Estimate = area × rate. Rates are editable assumptions; set your supplier’s rates.</div>
       </>}
     </section>
   );

@@ -1,8 +1,9 @@
 import * as THREE from 'three';
 import { buildBuildingGroup } from './buildingMesh';
 import { PANEL_COLORS } from './wallMesh';
-import { buildingFromWall, allWallPanels } from '../core/building/model';
+import { buildingFromWall, allWallPanels, floorCassettes } from '../core/building/model';
 import { wallBom, type WallSpec } from '../core/wall/panelize';
+import type { FloorSpec } from '../core/building/model';
 import type { SpecImages } from './snapshot';
 
 const PRINT_BG = 0xf4efe6;
@@ -18,10 +19,10 @@ function frame(camera: THREE.PerspectiveCamera, obj: THREE.Object3D, dir: THREE.
 }
 
 /** Building hero render + one thumbnail per unique panel type, for the wall spec PDF. */
-export function makeWallImages(wall: WallSpec): SpecImages {
+export function makeWallImages(wall: WallSpec, floor?: FloorSpec): SpecImages {
   const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
   renderer.setPixelRatio(2);
-  const model = buildingFromWall(wall, wall.depthMm ?? 4000);
+  const model = buildingFromWall(wall, wall.depthMm ?? 4000, floor);
 
   const shot = (w: number, h: number, build: (s: THREE.Scene) => THREE.Object3D, dir: THREE.Vector3): string => {
     renderer.setSize(w, h);
@@ -45,7 +46,7 @@ export function makeWallImages(wall: WallSpec): SpecImages {
 
   const shapes: Record<string, string> = {};
   const t = (wall.thicknessMm) / 1000;
-  for (const r of wallBom(allWallPanels(model))) {
+  for (const r of wallBom([...allWallPanels(model), ...floorCassettes(model)])) {
     shapes[`${r.type}:${r.w}x${r.h}`] = shot(240, 200, (scene) => {
       const geo = new THREE.BoxGeometry(r.w / 1000, r.h / 1000, t);
       const color = r.ok ? PANEL_COLORS[r.type] ?? 0xd9b27a : PANEL_COLORS.bad;
