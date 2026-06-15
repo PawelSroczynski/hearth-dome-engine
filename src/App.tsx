@@ -213,16 +213,17 @@ export default function App() {
         </div>
       </div>
 
-      <div className="left">{isWall ? <WallControls /> : <Controls />}</div>
+      <div className="left">
+        {isWall ? <WallControls /> : <Controls />}
+        <div className="left-detail">{isWall ? <PanelDetail /> : <BrickDetail r={result} />}</div>
+      </div>
       <div className="right">{isWall ? <WallReadout /> : <Readout r={result} />}</div>
       {isWall
         ? <>
-            <div className="detail-dock"><PanelDetail /></div>
             <div className="bottom"><WallExportBar /></div>
             <WallSpecSheet />
           </>
         : <>
-            <div className="detail-dock"><BrickDetail r={result} /></div>
             <div className="bottom"><ExportBar params={params} result={result} /></div>
             <SpecSheet params={params} result={result} />
           </>}

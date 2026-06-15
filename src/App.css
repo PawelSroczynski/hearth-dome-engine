@@ -34,10 +34,17 @@ body { overflow: hidden; background: var(--bg); color: var(--ink); }
   padding: 12px 14px;
   box-shadow: 0 16px 40px -16px rgba(0, 0, 0, 0.6);
 }
-.left { position: absolute; top: 20px; left: 20px; width: min(310px, calc(100vw - 40px)); z-index: 10; }
+/* left = ONE integrated glass panel: parameters (scroll) + preview stacked */
+.left {
+  position: absolute; top: 20px; left: 20px; width: min(330px, calc(100vw - 40px));
+  max-height: calc(100vh - 40px); z-index: 10; display: flex; flex-direction: column; overflow: hidden;
+  background: var(--glass); backdrop-filter: blur(16px) saturate(1.3); -webkit-backdrop-filter: blur(16px) saturate(1.3);
+  border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 16px 40px -16px rgba(0, 0, 0, 0.6);
+}
+.left .panel { background: transparent; backdrop-filter: none; -webkit-backdrop-filter: none; border: none; box-shadow: none; border-radius: 0; }
+.left > .controls { flex: 1 1 auto; overflow-y: auto; overflow-x: hidden; min-height: 0; max-height: none; }
+.left-detail { flex: none; border-top: 1px solid var(--line); }
 .right { position: absolute; top: 20px; right: 20px; width: min(260px, calc(100vw - 40px)); z-index: 10; }
-/* keep panels from growing into the bottom-left detail dock / off-screen */
-.controls { max-height: calc(100vh - 310px); overflow-y: auto; overflow-x: hidden; }
 .readout { max-height: calc(100vh - 40px); overflow-y: auto; overflow-x: hidden; }
 
 /* top construction switch */
@@ -111,7 +118,7 @@ body { overflow: hidden; background: var(--bg); color: var(--ink); }
 .segmented.sm button { padding: 5px 4px; font-size: 11px; border-radius: 8px; }
 .chk { display: flex; align-items: center; gap: 4px; font-size: 11px; color: rgba(236,227,214,0.75); cursor: pointer; }
 .chk input { accent-color: var(--accent); }
-.detail-stage { position: relative; width: 100%; height: 175px; border-radius: 10px; overflow: hidden; }
+.detail-stage { position: relative; width: 100%; height: 240px; border-radius: 10px; overflow: hidden; }
 .detail-canvas { position: absolute; inset: 0; }
 .detail-overlay { position: absolute; inset: 0; pointer-events: none; }
 .detail-label { position: absolute; transform: translate(-50%, -50%); font-size: 9.5px; font-variant-numeric: tabular-nums; white-space: nowrap; padding: 1px 4px; border-radius: 4px; display: none; }
@@ -162,5 +169,5 @@ body { overflow: hidden; background: var(--bg); color: var(--ink); }
   .left, .right { position: absolute; top: auto; left: 12px; right: 12px; width: auto; }
   .left { bottom: 70px; } .right { top: 56px; }
   .bottom { bottom: 12px; }
-  .detail-dock { display: none; }
+  .left-detail { display: none; }
 }
