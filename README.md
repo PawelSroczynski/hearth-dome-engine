@@ -14,7 +14,8 @@ owned code, verified against v1 as an **oracle** (golden tests).
 - **Original tool (v1):** the "Goldberg Polyhedron Mold Engine" published at
   <https://geohack.xyz/pizza-oven>. v1 in this lineage is a 1:1 static mirror of
   that site's **minified production bundle** (no readable source was available).
-- **Idea / concept origin:** the brick-dome mold approach this is based on —
+- **Idea / concept origin:** the brick-dome mold approach this is based on, by
+  **Nickolas Coverstone** —
   <https://www.facebook.com/share/18tABi7Q2t/>.
 - **This repo (v2):** an **independent clean-room reimplementation**. The minified
   v1 bundle was used only as a behavioural **oracle** (its on-screen outputs were

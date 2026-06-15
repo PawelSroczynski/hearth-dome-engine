@@ -46,7 +46,12 @@ export function domeSpecs(p: DomeParams): DomeSpecs {
   };
 }
 
-// --- unit helpers / display formatting (match v1) ---
+// --- metric display formatting ---
+export const mmRound = (mm: number) => Math.round(mm);
+export const m2Round = (m2: number) => Math.round(m2 * 100) / 100;
+export const m3Round = (m3: number) => Math.round(m3 * 1000) / 1000;
+
+// --- imperial conversions (oracle comparison against v1 fixtures only) ---
 export const mmToIn = (mm: number) => mm / 25.4;
 export const m2ToFt2 = (m2: number) => m2 * 10.7639;
 export const m3ToFt3 = (m3: number) => m3 * 35.3147;

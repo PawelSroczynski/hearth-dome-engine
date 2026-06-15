@@ -37,7 +37,7 @@ export function computeOven(p: OvenParams): OvenResult {
   const up = domeAxis(p.base);
   const { full, cut, total } = domeCounts(faces, up);
   const comp = classifyFaces(faces);
-  const shapes = fullBrickShapes(faces, up);
+  const shapes = fullBrickShapes(faces, up, p.interiorMm / 2);
   return {
     faces,
     up,

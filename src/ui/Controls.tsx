@@ -24,7 +24,7 @@ function Slider({
   );
 }
 
-const inches = (mm: number) => `${Math.round(mm / 25.4)}″`;
+const mm = (v: number) => `${Math.round(v)} mm`;
 
 export function Controls() {
   const s = useOven();
@@ -49,11 +49,27 @@ export function Controls() {
       <Slider label="Frequency" value={s.frequency} min={1} max={8} step={1}
         display={`GP(${s.frequency},0)`} onChange={(v) => s.set('frequency', v)} />
       <Slider label="Interior Ø" value={s.interiorMm} min={500} max={1800} step={10}
-        display={inches(s.interiorMm)} onChange={(v) => s.set('interiorMm', v)} />
+        display={mm(s.interiorMm)} onChange={(v) => s.set('interiorMm', v)} />
       <Slider label="Brick Thickness" value={s.thicknessMm} min={25} max={200} step={5}
-        display={inches(s.thicknessMm)} onChange={(v) => s.set('thicknessMm', v)} />
+        display={mm(s.thicknessMm)} onChange={(v) => s.set('thicknessMm', v)} />
       <Slider label="Cut Angle" value={s.cutAngleDeg} min={30} max={90} step={1}
         display={`${s.cutAngleDeg}°`} onChange={(v) => s.set('cutAngleDeg', v)} />
+
+      <div className="seg-label">View</div>
+      <div className="segmented">
+        <button className={s.view === 'brick' ? 'on' : ''} onClick={() => s.setView('brick')}>
+          <span>Brick</span><em>dome</em>
+        </button>
+        <button className={s.view === 'mould' ? 'on' : ''} onClick={() => s.setView('mould')}>
+          <span>Mould</span><em>cast</em>
+        </button>
+      </div>
+      {s.view !== 'mould' ? null : <>
+        <Slider label="Mould Wall" value={s.mouldWallMm} min={3} max={20} step={1}
+          display={mm(s.mouldWallMm)} onChange={(v) => s.setMould('mouldWallMm', v)} />
+        <Slider label="Flange Width" value={s.mouldFlangeMm} min={0} max={20} step={1}
+          display={mm(s.mouldFlangeMm)} onChange={(v) => s.setMould('mouldFlangeMm', v)} />
+      </>}
       </>}
     </section>
   );

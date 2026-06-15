@@ -46,3 +46,34 @@ describe('fullBrickShapes — unique-shape clustering vs v1 counts', () => {
     expect(pent?.count).toBe(6);
   });
 });
+
+describe('fullBrickShapes — real metric dimensions (mm)', () => {
+  const faces = goldbergDual(subdivideGeodesic('icosa', 4));
+  const up = domeAxis('icosa');
+
+  it('edgeMm / spanMm are the unit chords scaled by innerR', () => {
+    const scale = 510; // innerR for interior Ø 1020 mm
+    for (const s of fullBrickShapes(faces, up, scale)) {
+      expect(s.edgeMm.length).toBe(s.edgeUnits.length);
+      s.edgeUnits.forEach((u, i) => expect(s.edgeMm[i]).toBeCloseTo(u * scale, 6));
+      expect(s.spanMm).toBeCloseTo(s.spanUnit * scale, 6);
+    }
+  });
+
+  it('metric dimensions scale linearly with innerR', () => {
+    const a = fullBrickShapes(faces, up, 300);
+    const b = fullBrickShapes(faces, up, 600);
+    a.forEach((sa, i) => {
+      expect(b[i].spanMm).toBeCloseTo(sa.spanMm * 2, 6);
+      sa.edgeMm.forEach((e, j) => expect(b[i].edgeMm[j]).toBeCloseTo(e * 2, 6));
+    });
+  });
+
+  it('default dome pentagon has equal edges within a sane mm range', () => {
+    const pent = fullBrickShapes(faces, up, 510).find((s) => s.sides === 5)!;
+    const min = Math.min(...pent.edgeMm), max = Math.max(...pent.edgeMm);
+    expect(max - min).toBeLessThan(1e-6); // regular pentagon
+    expect(min).toBeGreaterThan(0);
+    expect(max).toBeLessThan(510); // an edge cannot exceed the inner radius
+  });
+});

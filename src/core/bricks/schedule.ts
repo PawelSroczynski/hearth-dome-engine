@@ -25,6 +25,12 @@ export interface BrickShape {
   edgeUnits: number[];
   /** longest diagonal on the unit sphere (relative) */
   spanUnit: number;
+  /** real inner-face edge lengths (mm) = edgeUnits * innerR */
+  edgeMm: number[];
+  /** real inner-face longest diagonal (mm) = spanUnit * innerR */
+  spanMm: number;
+  /** a representative face of this congruence class (for single-brick render/export) */
+  face: GoldbergFace;
 }
 
 function edgeChords(face: GoldbergFace): number[] {
@@ -32,6 +38,12 @@ function edgeChords(face: GoldbergFace): number[] {
   const e: number[] = [];
   for (let i = 0; i < n; i++) e.push(dist(face.corners[i], face.corners[(i + 1) % n]));
   return e;
+}
+
+/** Congruence signature: same value <=> same shape (sides + sorted edge chords). */
+export function shapeSignature(face: GoldbergFace): string {
+  const edges = edgeChords(face).sort((a, b) => a - b);
+  return `${face.sides}|${edges.map((x) => Math.round(x * SIG_PRECISION)).join(',')}`;
 }
 
 function spanOf(face: GoldbergFace): number {
@@ -44,16 +56,20 @@ function spanOf(face: GoldbergFace): number {
 const cornerName = (sides: number) =>
   sides === 5 ? 'PENTAGON' : sides === 4 ? 'SQUARE' : sides === 3 ? 'TRIANGLE' : 'HEXAGON';
 
-/** Full-brick shape schedule, ordered: corner shape first, then hexagons by frequency. */
-export function fullBrickShapes(faces: GoldbergFace[], up: Vec3): BrickShape[] {
-  const groups = new Map<string, { sides: number; edges: number[]; span: number; count: number }>();
+/**
+ * Full-brick shape schedule, ordered: corner shape first, then hexagons by frequency.
+ * `innerRMm` (inner radius) scales the relative unit chords to real mm; the flat
+ * faces are tangent to the inner sphere, so inner-face edge mm = unit chord * innerR.
+ */
+export function fullBrickShapes(faces: GoldbergFace[], up: Vec3, innerRMm = 1): BrickShape[] {
+  const groups = new Map<string, { sides: number; edges: number[]; span: number; count: number; face: GoldbergFace }>();
   for (const f of faces) {
     if (classifyFace(f, up) !== 'full') continue;
     const edges = edgeChords(f).sort((a, b) => a - b);
-    const sig = `${f.sides}|${edges.map((x) => Math.round(x * SIG_PRECISION)).join(',')}`;
+    const sig = shapeSignature(f);
     const g = groups.get(sig);
     if (g) g.count++;
-    else groups.set(sig, { sides: f.sides, edges, span: spanOf(f), count: 1 });
+    else groups.set(sig, { sides: f.sides, edges, span: spanOf(f), count: 1, face: f });
   }
   const arr = [...groups.values()];
   // corner shapes (pent/sq/tri = fewer sides) first, then hexagons; within a
@@ -64,6 +80,11 @@ export function fullBrickShapes(faces: GoldbergFace[], up: Vec3): BrickShape[] {
   return arr.map((g) => {
     const base = cornerName(g.sides);
     const label = g.sides === 6 ? `HEXAGON ${String.fromCharCode(65 + hexLetter++)}` : base;
-    return { label, sides: g.sides, count: g.count, edgeUnits: g.edges, spanUnit: g.span };
+    return {
+      label, sides: g.sides, count: g.count,
+      edgeUnits: g.edges, spanUnit: g.span,
+      edgeMm: g.edges.map((e) => e * innerRMm), spanMm: g.span * innerRMm,
+      face: g.face,
+    };
   });
 }
