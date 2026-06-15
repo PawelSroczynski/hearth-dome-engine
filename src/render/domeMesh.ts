@@ -95,7 +95,9 @@ export function buildDomeGroup(
     for (let i = 0; i < ring.length; i++) { add(edgePts, ring[i], 1.0008); add(edgePts, ring[(i + 1) % ring.length], 1.0008); }
     const eg = new THREE.BufferGeometry();
     eg.setAttribute('position', new THREE.Float32BufferAttribute(edgePts, 3));
-    group.add(new THREE.LineSegments(eg, new THREE.LineBasicMaterial({ color: 0x2a1c12, transparent: true, opacity: 0.6 })));
+    const eline = new THREE.LineSegments(eg, new THREE.LineBasicMaterial({ color: 0x2a1c12, transparent: true, opacity: 0.6 }));
+    eline.userData = { outlineFor: labelFor?.(face), baseOpacity: 0.6 };
+    group.add(eline);
   }
   return group;
 }

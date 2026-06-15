@@ -114,7 +114,7 @@ function addSlope(group: THREE.Group, origin: THREE.Vector3, uDir: THREE.Vector3
     mesh.userData = { shapeLabel: key, panelType: 'roof', w: p.w, h: p.h, ok: p.ok, baseColor: color };
     sg.add(mesh);
     const line = new THREE.LineSegments(new THREE.EdgesGeometry(geo, 1), new THREE.LineBasicMaterial({ color: 0x2a1c12, transparent: true, opacity: 0.4 }));
-    line.position.copy(mesh.position); sg.add(line);
+    line.position.copy(mesh.position); line.userData = { outlineFor: key, baseOpacity: 0.4 }; sg.add(line);
     if (labels) {
       const lb = panelLabel(labels, key);
       orientRoofLabel(lb); // lie in the slope plane, text-up = up-slope (not upside-down)
@@ -161,7 +161,7 @@ function addRoof(group: THREE.Group, m: BuildingModel, frameView = false, labels
       mesh.userData = { shapeLabel: key, panelType: 'roof', w: p.w, h: p.h, ok: p.ok, baseColor: color };
       group.add(mesh);
       const line = new THREE.LineSegments(new THREE.EdgesGeometry(geo, 1), new THREE.LineBasicMaterial({ color: 0x2a1c12, transparent: true, opacity: 0.4 }));
-      line.position.copy(mesh.position); group.add(line);
+      line.position.copy(mesh.position); line.userData = { outlineFor: key, baseOpacity: 0.4 }; group.add(line);
       if (labels) {
         const lb = panelLabel(labels, key); orientRoofLabel(lb);
         lb.position.copy(mesh.position); lb.position.y += ROOF_T / 2 + 0.006; group.add(lb);
@@ -233,6 +233,7 @@ export function buildBuildingGroup(m: BuildingModel, frameView = false): THREE.G
       const line = new THREE.LineSegments(new THREE.EdgesGeometry(geo, 1),
         new THREE.LineBasicMaterial({ color: 0x2a1c12, transparent: true, opacity: 0.5 }));
       line.position.copy(mesh.position); line.rotation.y = theta;
+      line.userData = { outlineFor: key, baseOpacity: 0.5 };
       group.add(line);
 
       if (labels) {
@@ -269,6 +270,7 @@ export function buildBuildingGroup(m: BuildingModel, frameView = false): THREE.G
     const line = new THREE.LineSegments(new THREE.EdgesGeometry(geo, 1),
       new THREE.LineBasicMaterial({ color: 0x2a1c12, transparent: true, opacity: 0.4 }));
     line.position.copy(mesh.position);
+    line.userData = { outlineFor: key, baseOpacity: 0.4 };
     group.add(line);
     if (labels) {
       const lb = panelLabel(labels, key);

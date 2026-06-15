@@ -199,17 +199,18 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [construction]);
 
-  // highlight the selected shape type
+  // highlight the selected shape type by OUTLINE (brighten its edge lines), not fill colour
   useEffect(() => {
     const ctx = sceneRef.current;
     if (!ctx || !ctx.dome) return;
     ctx.dome.traverse((o) => {
-      if (!(o instanceof THREE.Mesh)) return;
-      const mat = o.material as THREE.MeshStandardMaterial;
-      if (!mat.emissive) return;
-      const on = selected != null && o.userData.shapeLabel === selected;
-      mat.emissive.setHex(on ? 0xff9a4d : 0x000000);
-      mat.emissiveIntensity = on ? 0.45 : 0;
+      if (!(o instanceof THREE.LineSegments)) return;
+      const key = o.userData.outlineFor as string | undefined;
+      if (key === undefined) return;
+      const mat = o.material as THREE.LineBasicMaterial;
+      const on = selected != null && key === selected;
+      mat.color.setHex(on ? 0xff7a1a : 0x2a1c12);
+      mat.opacity = on ? 1 : (o.userData.baseOpacity as number ?? 0.5);
     });
   }, [selected, result, view, mouldWallMm, mouldFlangeMm, construction, wall]);
 
