@@ -3,6 +3,7 @@ import { DEFAULT_PARAMS, type OvenParams } from './core/engine';
 import type { BaseSolid } from './core/goldberg/formulas';
 import type { SpecImages } from './render/snapshot';
 import type { WallSpec, Opening } from './core/wall/panelize';
+import type { Snapshot } from './core/share';
 
 export type ViewMode = 'brick' | 'mould';
 export type Construction = 'dome' | 'wall';
@@ -48,6 +49,7 @@ interface OvenStore extends OvenParams {
   setRoofType: (t: 'flat' | 'gable' | 'mono') => void;
   setRoof: (key: 'roofPitchDeg' | 'roofModuleMm' | 'roofRateEur', value: number) => void;
   setFrameView: (on: boolean) => void;
+  applySnapshot: (s: Snapshot) => void;
 }
 
 export const useOven = create<OvenStore>((set) => ({
@@ -57,7 +59,7 @@ export const useOven = create<OvenStore>((set) => ({
   mouldFlangeMm: 6,
   selected: null,
   specImages: null,
-  construction: 'dome',
+  construction: 'wall',
   wall: DEFAULT_WALL,
   wallRateEur: 100,
   floorModuleMm: 800,
@@ -86,4 +88,25 @@ export const useOven = create<OvenStore>((set) => ({
   setRoofType: (roofType) => set({ roofType }),
   setRoof: (key, value) => set({ [key]: value }),
   setFrameView: (frameView) => set({ frameView }),
+  applySnapshot: (s) => set({
+    base: s.base, frequency: s.frequency, subdivisionClass: s.subdivisionClass, classIIIn: s.classIIIn,
+    interiorMm: s.interiorMm, thicknessMm: s.thicknessMm, cutAngleDeg: s.cutAngleDeg,
+    view: s.view, construction: s.construction, wall: s.wall, wallRateEur: s.wallRateEur,
+    floorModuleMm: s.floorModuleMm, floorThicknessMm: s.floorThicknessMm, floorSpanAxis: s.floorSpanAxis,
+    floorRateEur: s.floorRateEur, roofType: s.roofType, roofPitchDeg: s.roofPitchDeg,
+    roofModuleMm: s.roofModuleMm, roofRateEur: s.roofRateEur, frameView: s.frameView,
+  }),
 }));
+
+/** Current full snapshot for permalinks (read outside React via the store). */
+export function currentSnapshot(): Snapshot {
+  const s = useOven.getState();
+  return {
+    base: s.base, frequency: s.frequency, subdivisionClass: s.subdivisionClass, classIIIn: s.classIIIn,
+    interiorMm: s.interiorMm, thicknessMm: s.thicknessMm, cutAngleDeg: s.cutAngleDeg,
+    view: s.view, construction: s.construction, wall: s.wall, wallRateEur: s.wallRateEur,
+    floorModuleMm: s.floorModuleMm, floorThicknessMm: s.floorThicknessMm, floorSpanAxis: s.floorSpanAxis,
+    floorRateEur: s.floorRateEur, roofType: s.roofType, roofPitchDeg: s.roofPitchDeg,
+    roofModuleMm: s.roofModuleMm, roofRateEur: s.roofRateEur, frameView: s.frameView,
+  };
+}
