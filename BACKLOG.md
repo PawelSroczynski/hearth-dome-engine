@@ -27,16 +27,15 @@ Legend: 🔴 high · 🟡 medium · 🟢 low · ✅ done
 - 🟡 **Cut angle affects 3D + counts (#15)** — currently only 90° hemisphere in 3D.
 - 🟡 **2D net / unfold** — flattened brick pattern for cutting. Reference: acidome
   `Looker.pointToPlane` / `planeToPoint`.
-- 🔴 **Subdivision class I / II / III** — we currently support **only Class I**
-  (`subdivideGeodesic` → GP(n,0)). Class II = GP(m,m) ("triacon", e.g. soccer-ball
-  GP(1,1)) rotates the whole tessellation ~30°, which **rotates every pentagon about
-  its own normal** → flips side-pentagon orientation **vertex-down ↔ edge-down while
-  KEEPING the pentagon apex** (pentad). This is the key lever for the "pentagon edge
-  parallel to base" request — verified practically on acidome (switching class I↔II).
-  Reference: acidome `subdivisionScheme` / "make a Class III M,N subdivision scheme".
-  Action: implement Class II (and III GP(m,n), chiral) subdivision + a class selector;
-  re-calibrate orientation parity vs acidome once it exists. Supersedes the seating
-  route below for this use-case (seating changes the apex; class does not).
+- ✅ **Subdivision class I / II** — `subdivideGoldbergCoxeter(base,m,n)` (barycentric
+  (m,n) lattice ported from acidome; neighbour-basis remap for edge-straddling points +
+  global triangle dedup → watertight). Class I = GP(n,0), Class II = GP(m,m). UI toggle
+  Class I/II. Verified by TDD: Euler=2, exactly 12 pentagons, and **pentad + Class II ⇒
+  all visible pentagons edge-down** (keeps the pentagon apex — the "pentagon edge
+  parallel to base" request, confirmed practically on acidome). This is why class, not
+  seating, is the right lever (class keeps the apex; seating changes it).
+- 🟢 **Subdivision class III (chiral, m≠n)** — already computed correctly by the same
+  `subdivideGoldbergCoxeter` (test (2,1) passes); not yet exposed in the UI.
 - 🟡 **Symmetry-axis seating (pentad / diad / triad)** — rotate the base solid so a
   chosen symmetry axis is vertical *before* subdivision (acidome pattern: `Figure.js`
   `switch(params.symmetry)` → `rotate(atan(a/b))` pentad, `asin(2/(√3+√15))` triad).
