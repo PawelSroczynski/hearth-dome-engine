@@ -17,6 +17,7 @@ function Slider({ label, value, min, max, step, display, onChange }: {
 }
 
 const mm = (v: number) => `${Math.round(v)} mm`;
+const m = (v: number) => `${(v / 1000).toFixed(2).replace(/\.?0+$/, '')} m`;
 
 export function WallControls() {
   const s = useOven();
@@ -31,11 +32,11 @@ export function WallControls() {
       </div>
       {!open ? null : <>
         <Slider label="Length" value={s.wall.lengthMm} min={3000} max={12000} step={100}
-          display={mm(s.wall.lengthMm)} onChange={(v) => s.setWall('lengthMm', v)} />
+          display={m(s.wall.lengthMm)} onChange={(v) => s.setWall('lengthMm', v)} />
         <Slider label="Depth" value={s.wall.depthMm ?? 4000} min={3000} max={12000} step={100}
-          display={mm(s.wall.depthMm ?? 4000)} onChange={(v) => s.setWall('depthMm', v)} />
+          display={m(s.wall.depthMm ?? 4000)} onChange={(v) => s.setWall('depthMm', v)} />
         <Slider label="Height" value={s.wall.heightMm} min={2000} max={3500} step={50}
-          display={mm(s.wall.heightMm)} onChange={(v) => s.setWall('heightMm', v)} />
+          display={m(s.wall.heightMm)} onChange={(v) => s.setWall('heightMm', v)} />
         <Slider label="Thickness" value={s.wall.thicknessMm} min={THICKNESS_MIN} max={THICKNESS_MAX} step={10}
           display={mm(s.wall.thicknessMm)} onChange={(v) => s.setWall('thicknessMm', v)} />
         <Slider label="Panel width (target)" value={s.wall.targetWidthMm} min={400} max={850} step={10}

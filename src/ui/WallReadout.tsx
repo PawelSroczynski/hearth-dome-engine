@@ -38,7 +38,7 @@ export function WallReadout() {
   const solid = [...wpanels, ...fpanels, ...rpanels];
   const flagged = solid.filter((p) => !p.ok).length;
   const wallPanelM2 = wpanels.reduce((s, p) => s + p.w * p.h, 0) / 1e6;
-  const floorM2 = fpanels.reduce((s, p) => s + p.w * p.h, 0) / 1e6;
+  const floorM2 = (wall.lengthMm * depth) / 1e6; // nominal building footprint (length × depth)
   const roofM2 = roofAreaMm2(wall.lengthMm, depth, roofPitchDeg, roofType) / 1e6;
   const wallCost = wallPanelM2 * rate, floorCost = floorM2 * floorRate, roofCost = roofM2 * roofRate;
   const cost = wallCost + floorCost + roofCost;
@@ -53,7 +53,7 @@ export function WallReadout() {
   return (
     <section className="panel readout">
       <div className="panel-title">
-        Panel Schedule
+        Parts List
         <CollapseToggle open={open} onToggle={() => setOpen((o) => !o)} />
       </div>
       {!open ? null : <>
