@@ -56,6 +56,42 @@ validation (panel ranges, joint feasibility) must travel with the geometry.
 - 🟢 Wall next: per-panel STL/ZIP export; corner Column (C) + Braced (B) panel types;
   multiple/edited openings; stacked panels for walls > 3000 mm; sourced €/m² rate.
 
+## LOD3 — integrated building envelope (🧊 ON HOLD — design review first, do not develop yet)
+
+Direction for raising each module from a box (LOD2) to a real layered/framed assembly
+with junction continuity (LOD3). Captured from Savick (chopped-straw prefab) CSI specs +
+EcoCocon. **Too complex to start now — needs time to digest before development.**
+
+- **Module = parametric layered + framed assembly** (generated, not drawn): `Module = { frame:
+  members[], core, layerStack[], openings[] }`. An "assembler" emits elements from (type,
+  dimensions, params); studs/fasteners/tapes are derived from rules (Savick: studs ≤406 mm o.c.
+  walls / ≤610 mm sloped; straw core 90–110 kg/m³).
+- **Element ontology** (small typed catalog — "what a module consists of"):
+  LAYER (planar, thickness t, side, role: structure/air/water/vapour/thermal/finish/service,
+  permeance, `continuous?`) · MEMBER (linear: plate/stud/header/lintel/batten, o.c.) ·
+  ACCESSORY (continuity: tape/gasket/sealant/lap, on a junction) · FASTENER (point, spacing) ·
+  UNIT (window/door).
+- **Rules engine = invariants over the building graph** (`Rule { id, scope: module|junction|
+  building, evaluate(ctx) → Violation[] }`, same pattern as SiteFit). Three families:
+  (1) **Continuity** — every junction × every control layer must have a connector accessory
+  bridging same-role layers (air-barrier continuity = building stays integrated);
+  (2) **Performance/material** — R ≥ target incl. thermal bridging, exterior permeance >
+  interior (drying out), density/o.c./biogenic-carbon in range — computed from the layer stack;
+  (3) **Dimensional/structural** — panels in catalog range, opening → lintel (>3 m → box lintel),
+  load path panel→plate→panel→foundation, foundation tolerance ±5 mm/3000.
+- **Junctions = first-class objects + parametric detail templates.** `Junction { edge, modules,
+  type: eave|corner|base|opening, template }`; a template(geom, params) → connector elements
+  (plates, blocking, tapes, flashings, laps) that satisfy continuity. The Savick BEYOND-CODE
+  ROOF/WINDOW/DOOR/SLAB drawings are exactly these templates. Integration is *manufactured* here.
+- **Derive-don't-draw**: geometry, BOM, cost, details, validation all from one parametric model →
+  consistency by construction. Savick's detail LOD is the *output* of such derivation.
+- **Cost (methodical, from Savick)**: replace flat €/m² with **area × complexity factor (0.6–2.0)**
+  auto-classified from module features (openings, rake/compound angles, storey, dormers).
+- **LOD tiers**: LOD1 massing → LOD2 panels/types (done) → LOD3 layers+members+junctions+continuity
+  → LOD4 fasteners/shop drawings. Climb incrementally; first slice = structural shell + air barrier
+  + WRB + continuity rule on 3 junctions (corner/base/opening).
+- Reference library in `/tmp/eco` (EcoCocon) + Savick CSI specs/details (savick.ca/resources).
+
 ## Committed / must-have
 
 - 🔴 **Node solving (connector hubs / "rozwiązanie węzłów")** — solve the geometry
