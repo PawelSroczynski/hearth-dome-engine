@@ -103,9 +103,16 @@ export function footprintBBox(f: Footprint): { L: number; D: number } {
   return { L: Math.max(...xs) - Math.min(...xs), D: Math.max(...ys) - Math.min(...ys) };
 }
 
-/** Floor cassettes tiling the footprint (plan coords). */
-export function floorCassettes(m: BuildingModel): Panel[] {
+/** Outer platform extent = wall-centreline footprint grown by the wall thickness on
+ *  every side (t/2 each), so the walls stand fully ON the platform (no overhang). */
+export function platformBBox(m: BuildingModel): { L: number; D: number } {
   const { L, D } = footprintBBox(m.footprint);
+  return { L: L + m.wallThicknessMm, D: D + m.wallThicknessMm };
+}
+
+/** Floor cassettes tiling the outer platform (plan coords). */
+export function floorCassettes(m: BuildingModel): Panel[] {
+  const { L, D } = platformBBox(m);
   return floorize(L, D, m.floor.moduleWidthMm, m.floor.spanAxis);
 }
 
