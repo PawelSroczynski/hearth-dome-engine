@@ -44,7 +44,7 @@ body { overflow: hidden; background: var(--bg); color: var(--ink); }
 .left .panel { background: transparent; backdrop-filter: none; -webkit-backdrop-filter: none; border: none; box-shadow: none; border-radius: 0; }
 .left > .controls { flex: 1 1 auto; overflow-y: auto; overflow-x: hidden; min-height: 0; max-height: none; }
 .left-detail { flex: none; border-top: 1px solid var(--line); }
-.right { position: absolute; top: 20px; right: 20px; width: min(260px, calc(100vw - 40px)); z-index: 10; }
+.right { position: absolute; top: 20px; right: 20px; width: min(260px, calc(100vw - 40px)); max-height: calc(100vh - 40px); overflow-y: auto; z-index: 10; }
 .gizmo { position: absolute; top: 20px; right: 296px; width: 116px; height: 116px; z-index: 11; opacity: 0.55; transition: opacity 0.18s ease; } /* top-right, just left of the readout panel */
 .gizmo:hover { opacity: 1; }
 .readout { max-height: calc(100vh - 40px); overflow-y: auto; overflow-x: hidden; }
@@ -120,7 +120,7 @@ body { overflow: hidden; background: var(--bg); color: var(--ink); }
 .segmented.sm button { padding: 5px 4px; font-size: 11px; border-radius: 8px; }
 .chk { display: flex; align-items: center; gap: 4px; font-size: 11px; color: rgba(236,227,214,0.75); cursor: pointer; }
 .chk input { accent-color: var(--accent); }
-.detail-stage { position: relative; width: 100%; height: 240px; border-radius: 10px; overflow: hidden; }
+.detail-stage { position: relative; width: 100%; height: 312px; border-radius: 10px; overflow: hidden; }
 .detail-canvas { position: absolute; inset: 0; }
 .detail-overlay { position: absolute; inset: 0; pointer-events: none; }
 .detail-label { position: absolute; transform: translate(-50%, -50%); font-size: 9.5px; font-variant-numeric: tabular-nums; white-space: nowrap; padding: 1px 4px; border-radius: 4px; display: none; }
