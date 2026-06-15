@@ -219,11 +219,6 @@ export default function App() {
     <div className="app">
       <div ref={mount} className="stage" />
       <div ref={gizmoMount} className="gizmo" />
-      <div className="brand">
-        <strong>{isWall ? 'StrawPanel Wall' : 'Hearth Dome Engine'}</strong>
-        <span>{isWall ? 'straw-panel wall · panelizer' : 'Goldberg pizza-oven mold · v2'}</span>
-      </div>
-
       <div className="left">
         {isWall ? <WallControls /> : <Controls />}
         <div className="left-detail">{isWall ? <PanelDetail /> : <BrickDetail r={result} />}</div>

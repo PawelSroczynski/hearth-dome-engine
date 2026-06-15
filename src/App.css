@@ -21,9 +21,6 @@ body { overflow: hidden; background: var(--bg); color: var(--ink); }
 *::-webkit-scrollbar-thumb { background: rgba(217,142,90,0.4); border-radius: 6px; }
 *::-webkit-scrollbar-thumb:hover { background: rgba(217,142,90,0.7); }
 
-.brand { position: absolute; top: 16px; left: 50%; transform: translateX(-50%); text-align: center; pointer-events: none; }
-.brand strong { display: block; font-size: 15px; letter-spacing: 0.02em; }
-.brand span { font-size: 11px; color: rgba(236, 227, 214, 0.55); letter-spacing: 0.06em; }
 
 .panel {
   background: var(--glass);
@@ -132,7 +129,7 @@ body { overflow: hidden; background: var(--bg); color: var(--ink); }
 .specsheet { display: none; }
 @media print {
   html, body, #root, .app { background: #fff !important; }
-  .left, .right, .bottom, .brand, .stage, .detail-dock, .gizmo { display: none !important; }
+  .left, .right, .bottom, .stage, .detail-dock, .gizmo { display: none !important; }
   .specsheet { display: block; background: #fff; color: #111; font-family: 'Inter', system-ui, sans-serif; padding: 24px; }
   .ss-title h1 { font-size: 21px; margin: 0 0 2px; }
   .ss-sub { color: #666; font-size: 12px; margin: 0 0 16px; }
