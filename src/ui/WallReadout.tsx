@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useOven } from '../store';
-import { panelize, wallBom, THICKNESS_MIN, THICKNESS_MAX } from '../core/wall/panelize';
+import { wallBom, THICKNESS_MIN, THICKNESS_MAX } from '../core/wall/panelize';
+import { buildingFromWall, allWallPanels } from '../core/building/model';
 import { CollapseToggle } from './CollapseToggle';
 
 function Row({ k, v }: { k: string; v: string | number }) {
@@ -14,11 +15,12 @@ export function WallReadout() {
   const selected = useOven((s) => s.selected);
   const setSelected = useOven((s) => s.setSelected);
   const [open, setOpen] = useState(true);
-  const panels = panelize(wall);
+  const depth = wall.depthMm ?? 4000;
+  const panels = allWallPanels(buildingFromWall(wall, depth));
   const bom = wallBom(panels);
   const solid = panels.filter((p) => p.type !== 'void');
   const flagged = solid.filter((p) => !p.ok).length;
-  const wallArea = wall.lengthMm * wall.heightMm;
+  const wallArea = 2 * (wall.lengthMm + depth) * wall.heightMm; // 4-wall shell
   const openArea = wall.openings.reduce((s, o) => s + o.w * Math.max(0, o.headH - o.sillH), 0);
   const panelAreaM2 = solid.reduce((s, p) => s + p.w * p.h, 0) / 1e6; // exactly what's on screen
   const cost = panelAreaM2 * rate;

@@ -4,7 +4,8 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { computeOven, type OvenParams } from './core/engine';
 import { buildDomeGroup, alignUpToY } from './render/domeMesh';
 import { buildMouldGroup } from './render/mouldMesh';
-import { buildWallGroup } from './render/wallMesh';
+import { buildBuildingGroup } from './render/buildingMesh';
+import { buildingFromWall } from './core/building/model';
 import { shapeSignature } from './core/bricks/schedule';
 import { useOven } from './store';
 import { Controls } from './ui/Controls';
@@ -122,8 +123,8 @@ export default function App() {
     let group: THREE.Group;
     let floorR = 0.5;
     if (construction === 'wall') {
-      group = buildWallGroup(wall).group;
-      floorR = Math.max(wall.lengthMm, 2000) / 1000 * 0.7;
+      group = buildBuildingGroup(buildingFromWall(wall, wall.depthMm ?? 4000));
+      floorR = Math.max(wall.lengthMm, wall.depthMm ?? 4000) / 1000 * 0.85;
     } else if (view === 'mould') {
       group = buildMouldGroup(result.shapes, {
         innerRMm: result.specs.innerDiaMm / 2, thicknessMm: result.specs.wallMm,
@@ -147,16 +148,17 @@ export default function App() {
     const ctx = sceneRef.current;
     if (!ctx) return;
     if (construction === 'wall') {
-      const wM = wall.lengthMm / 1000, hM = wall.heightMm / 1000;
-      const dist = Math.max(wM, hM) * 1.1 + 1.5;
-      ctx.camera.position.set(0, hM * 0.55, dist);
-      ctx.controls.target.set(0, hM * 0.5, 0);
+      const sizeM = Math.max(wall.lengthMm, wall.depthMm ?? 4000) / 1000, hM = wall.heightMm / 1000;
+      const d = sizeM * 0.95 + 2;
+      // 3/4 view from the front-right corner so the door/window wall (edge at -z) is visible
+      ctx.camera.position.set(d * 0.7, hM * 1.0, -d * 0.75);
+      ctx.controls.target.set(0, hM * 0.4, 0);
     } else {
       ctx.camera.position.set(0.95, 0.75, 1.15);
       ctx.controls.target.set(0, 0.2, 0);
     }
     ctx.controls.update();
-  }, [construction, wall.lengthMm, wall.heightMm]);
+  }, [construction, wall.lengthMm, wall.depthMm, wall.heightMm]);
 
   // highlight the selected shape type
   useEffect(() => {

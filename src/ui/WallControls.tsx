@@ -32,6 +32,8 @@ export function WallControls() {
       {!open ? null : <>
         <Slider label="Length" value={s.wall.lengthMm} min={3000} max={12000} step={100}
           display={mm(s.wall.lengthMm)} onChange={(v) => s.setWall('lengthMm', v)} />
+        <Slider label="Depth" value={s.wall.depthMm ?? 4000} min={3000} max={12000} step={100}
+          display={mm(s.wall.depthMm ?? 4000)} onChange={(v) => s.setWall('depthMm', v)} />
         <Slider label="Height" value={s.wall.heightMm} min={2000} max={3500} step={50}
           display={mm(s.wall.heightMm)} onChange={(v) => s.setWall('heightMm', v)} />
         <Slider label="Thickness" value={s.wall.thicknessMm} min={THICKNESS_MIN} max={THICKNESS_MAX} step={10}

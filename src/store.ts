@@ -8,7 +8,7 @@ export type ViewMode = 'brick' | 'mould';
 export type Construction = 'dome' | 'wall';
 
 const DEFAULT_WALL: WallSpec = {
-  lengthMm: 6000, heightMm: 2700, thicknessMm: 400, targetWidthMm: 800,
+  lengthMm: 6000, heightMm: 2700, thicknessMm: 400, targetWidthMm: 800, depthMm: 4000,
   openings: [
     { x: 800, w: 1000, sillH: 0, headH: 2100 },    // door
     { x: 3600, w: 1600, sillH: 800, headH: 2100 },  // window
@@ -31,7 +31,7 @@ interface OvenStore extends OvenParams {
   setSelected: (label: string | null) => void;
   setSpecImages: (img: SpecImages | null) => void;
   setConstruction: (c: Construction) => void;
-  setWall: (key: 'lengthMm' | 'heightMm' | 'thicknessMm' | 'targetWidthMm', value: number) => void;
+  setWall: (key: 'lengthMm' | 'heightMm' | 'thicknessMm' | 'targetWidthMm' | 'depthMm', value: number) => void;
   setOpening: (index: number, patch: Partial<Opening>) => void;
   setWallRate: (eurPerM2: number) => void;
 }

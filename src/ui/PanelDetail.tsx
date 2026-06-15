@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { useOven } from '../store';
-import { panelize, wallBom } from '../core/wall/panelize';
+import { wallBom } from '../core/wall/panelize';
+import { buildingFromWall, allWallPanels } from '../core/building/model';
 import { PANEL_COLORS } from '../render/wallMesh';
 
 interface Label { pos: THREE.Vector3; text: string; kind: 'dim' | 'angle' }
@@ -17,8 +18,8 @@ export function PanelDetail() {
   const dimsRef = useRef(true); const anglesRef = useRef(true);
   useEffect(() => { dimsRef.current = showDims; anglesRef.current = showAngles; }, [showDims, showAngles]);
 
-  // resolve the selected panel (or first in the BOM)
-  const bom = wallBom(panelize(wall));
+  // resolve the selected panel (or first in the BOM) across the whole building
+  const bom = wallBom(allWallPanels(buildingFromWall(wall, wall.depthMm ?? 4000)));
   const pick = bom.find((r) => `${r.type}:${r.w}x${r.h}` === selected) ?? bom[0];
   const pType = pick?.type, pW = pick?.w, pH = pick?.h, pOk = pick?.ok;
   const tMm = wall.thicknessMm;

@@ -29,6 +29,7 @@ export interface WallSpec {
   thicknessMm: number;
   targetWidthMm: number; // preferred standard-panel width (clamped 400–850)
   openings: Opening[];
+  depthMm?: number; // building depth (perpendicular wall length) for the 4-wall shell
 }
 
 /**

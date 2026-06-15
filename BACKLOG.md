@@ -18,8 +18,10 @@ roof from the roof spec. BOM + cost aggregate across all elements.
   `footprintAreaMm2`.
 - ✅ **Phase 1 — `panelizeSurface`** (element-agnostic); `panelize(wall)` delegates;
   regression test proves identical wall output.
-- 🔴 **Phase 2 — building from footprint**: auto-generate the 4+ walls from edges,
-  render together; corners = butt joints (flagged) for now.
+- ✅ **Phase 2 — building from footprint**: `buildingFromWall` (rectangle L×depth),
+  `wallPlacements`, `buildBuildingGroup` render all 4 walls in 3D; Depth slider; BOM +
+  cost aggregate over the whole shell; panel picking/detail across all walls. Corners
+  are butt joints for now (node solving = Phase 5).
 - 🟡 **Phase 3 — floor slab**: footprint polygon → modular floor cassettes (grid).
 - 🟡 **Phase 4 — roof**: gable/mono → sloped faces → panelize (inclined panel types).
 - 🔴 **Phase 5 — junctions / node solving**: corner Column (C), eaves, base — the hard
