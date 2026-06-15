@@ -14,6 +14,12 @@ describe('panelize', () => {
     expect(area(ps)).toBeCloseTo(6000 * 2700, 3);
   });
 
+  it('maximises identical interior panels; only the edge closes the remainder', () => {
+    const widths = panelize({ ...base, lengthMm: 6000, targetWidthMm: 800 }).map((p) => Math.round(p.w));
+    expect(widths.filter((w) => w === 800).length).toBe(7); // seven identical 800-wide
+    expect(widths.filter((w) => w !== 800)).toEqual([400]); // one closer
+  });
+
   it('panels + voids tile the wall exactly with a door and a window', () => {
     const ps = panelize({
       ...base,

@@ -95,15 +95,15 @@ export function panelizeSurface(spec: SurfaceSpec): Panel[] {
   const panels: Panel[] = [];
   const target = Math.min(Math.max(targetWidthMm, PANEL_LIMITS.standard.wMin), PANEL_LIMITS.standard.wMax);
 
-  // solid stretches -> vertical standard strips (full height, stacked if > 3000)
+  // solid stretches -> as many identical 'target'-wide panels as possible; only the
+  // edge panel(s) "close" the remainder (maximises repeated identical panels).
   for (const [a, b] of solidIntervals(lengthMm, openings)) {
     const span = b - a;
     if (span < 1) continue;
-    const n = Math.max(1, Math.ceil(span / target)); // ceil => strip width ≤ target ≤ 850
-    const stripW = span / n;
-    for (let i = 0; i < n; i++) {
-      const x = a + i * stripW;
-      addColumn(panels, x, stripW, 0, heightMm, 'standard');
+    let x = a;
+    for (const w of closerWidths(span, target)) {
+      addColumn(panels, x, w, 0, heightMm, 'standard');
+      x += w;
     }
   }
 
@@ -121,6 +121,22 @@ export function panelizeSurface(spec: SurfaceSpec): Panel[] {
     }
   }
   return panels;
+}
+
+/**
+ * Widths for a solid stretch: repeat `target` as many times as possible; the leftover
+ * "closes" the run. If the closer would be below the min panel width it is merged with
+ * the last full panel and the two are split evenly (both still ≥ min).
+ */
+function closerWidths(span: number, target: number): number[] {
+  const MIN = PANEL_LIMITS.standard.wMin;
+  if (span <= target + 0.5) return [span];
+  const nFull = Math.floor(span / target);
+  const rem = span - nFull * target;
+  if (rem < 0.5) return Array(nFull).fill(target);
+  if (rem >= MIN) return [...Array(nFull).fill(target), rem];
+  const two = (target + rem) / 2;
+  return [...Array(nFull - 1).fill(target), two, two];
 }
 
 /** A full-height column split vertically into ≤3000 mm standard panels. */

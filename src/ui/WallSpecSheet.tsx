@@ -86,10 +86,10 @@ export function WallSpecSheet() {
       <section className="ss-sec">
         <h2>3 · Method</h2>
         <p>
-          Each wall is filled with EcoCocon straw panels: solid stretches become vertical
+          Each wall is filled with StrawPanel modules: solid stretches become vertical
           STANDARD panels (≤ 850 mm wide), each opening gets a LINTEL band above and, for
           windows, a SILL band below; the opening itself is a void. Panels tile each wall
-          exactly and are checked against EcoCocon size ranges (standard 400–850 × 400–3000 mm;
+          exactly and are checked against the panel size ranges (standard 400–850 × 400–3000 mm;
           lintel/sill height 424–850 mm). Out-of-range panels are flagged.
         </p>
         <p>
@@ -98,7 +98,7 @@ export function WallSpecSheet() {
         </p>
         <p className="ss-note">
           Scope: 4-wall shell + floor. Roof panelization is planned. Corners are butt
-          joints (node detailing pending). Floor cassettes are our catalog (not native EcoCocon).
+          joints (node detailing pending). Floor &amp; roof use our own modular catalog.
         </p>
       </section>
 
@@ -132,8 +132,8 @@ export function WallSpecSheet() {
           <tr><td><b>Total</b></td><td><b>€{Math.round(cost).toLocaleString()}</b></td></tr>
         </tbody></table>
         <p className="ss-note">
-          Estimate = panel area × rate. Rate is an editable assumption (EcoCocon prices by
-          exterior wall area excluding openings); set your supplier’s rate.
+          Estimate = panel area × rate. Rates are editable assumptions (by exterior wall
+          area excluding openings); set your supplier’s rates.
         </p>
       </section>
 

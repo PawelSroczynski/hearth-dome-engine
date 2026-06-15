@@ -59,7 +59,7 @@ export const useOven = create<OvenStore>((set) => ({
   specImages: null,
   construction: 'dome',
   wall: DEFAULT_WALL,
-  wallRateEur: 250,
+  wallRateEur: 100,
   floorModuleMm: 800,
   floorThicknessMm: 240,
   floorSpanAxis: 'y',
