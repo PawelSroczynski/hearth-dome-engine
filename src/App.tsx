@@ -5,7 +5,9 @@ import { computeOven, type OvenParams } from './core/engine';
 import { buildDomeGroup, alignUpToY } from './render/domeMesh';
 import { buildMouldGroup } from './render/mouldMesh';
 import { buildBuildingGroup } from './render/buildingMesh';
+import { createViewCube } from './render/viewCube';
 import { buildingFromWall } from './core/building/model';
+import { decodeState, tokenFromHash } from './core/share';
 import { shapeSignature } from './core/bricks/schedule';
 import { useOven } from './store';
 import { Controls } from './ui/Controls';
@@ -22,6 +24,7 @@ import './App.css';
 
 export default function App() {
   const mount = useRef<HTMLDivElement>(null);
+  const gizmoMount = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<{
     scene: THREE.Scene; camera: THREE.PerspectiveCamera; renderer: THREE.WebGLRenderer;
     dome: THREE.Group | null; floor: THREE.Mesh; controls: OrbitControls;
@@ -55,6 +58,14 @@ export default function App() {
     [base, frequency, subdivisionClass, classIIInVal, interiorMm, thicknessMm, cutAngleDeg],
   );
   const result = useMemo(() => computeOven(params), [params]);
+  const applySnapshot = useOven((s) => s.applySnapshot);
+
+  // load a shared configuration from the URL hash (#s=…) once on mount
+  useEffect(() => {
+    const tok = tokenFromHash(window.location.hash);
+    const snap = tok && decodeState(tok);
+    if (snap) applySnapshot(snap);
+  }, [applySnapshot]);
 
   // one-time scene setup
   useEffect(() => {
@@ -82,6 +93,10 @@ export default function App() {
     controls.enableDamping = true; controls.target.set(0, 0.2, 0);
     sceneRef.current = { scene, camera, renderer, dome: null, floor, controls };
 
+    // navigation gizmo (ViewCube) in the corner, mirrors the camera; click a face to snap
+    const gizmo = createViewCube(() => camera, controls);
+    gizmoMount.current?.appendChild(gizmo.domElement);
+
     // click a brick face -> select its shape type
     const raycaster = new THREE.Raycaster();
     let downX = 0, downY = 0;
@@ -106,7 +121,7 @@ export default function App() {
     renderer.domElement.addEventListener('pointerup', onUp);
 
     let raf = 0;
-    const tick = () => { controls.update(); renderer.render(scene, camera); raf = requestAnimationFrame(tick); };
+    const tick = () => { controls.update(); renderer.render(scene, camera); gizmo.update(); raf = requestAnimationFrame(tick); };
     tick();
     const onResize = () => {
       camera.aspect = el.clientWidth / el.clientHeight; camera.updateProjectionMatrix();
@@ -117,6 +132,7 @@ export default function App() {
       cancelAnimationFrame(raf); window.removeEventListener('resize', onResize);
       renderer.domElement.removeEventListener('pointerdown', onDown);
       renderer.domElement.removeEventListener('pointerup', onUp);
+      gizmo.dispose(); gizmo.domElement.remove();
       controls.dispose(); renderer.dispose(); el.removeChild(renderer.domElement); sceneRef.current = null;
     };
   }, [setSelected]);
@@ -128,7 +144,11 @@ export default function App() {
     if (ctx.dome) {
       ctx.scene.remove(ctx.dome);
       ctx.dome.traverse((o) => {
-        if (o instanceof THREE.Mesh) { o.geometry.dispose(); (o.material as THREE.Material).dispose(); }
+        if (o instanceof THREE.Mesh) {
+          o.geometry.dispose();
+          const m = o.material as THREE.Material & { map?: THREE.Texture | null };
+          m.map?.dispose(); m.dispose();
+        }
       });
     }
     let group: THREE.Group;
@@ -197,27 +217,27 @@ export default function App() {
   return (
     <div className="app">
       <div ref={mount} className="stage" />
+      <div ref={gizmoMount} className="gizmo" />
       <div className="brand">
         <strong>{isWall ? 'StrawPanel Wall' : 'Hearth Dome Engine'}</strong>
         <span>{isWall ? 'straw-panel wall · panelizer' : 'Goldberg pizza-oven mold · v2'}</span>
-      </div>
-
-      <div className="topbar">
-        <div className="segmented constr">
-          <button className={!isWall ? 'on' : ''} onClick={() => setConstruction('dome')}>
-            <span>Pizza Dome</span><em>Goldberg</em>
-          </button>
-          <button className={isWall ? 'on' : ''} onClick={() => setConstruction('wall')}>
-            <span>StrawPanel Wall</span><em>straw panels</em>
-          </button>
-        </div>
       </div>
 
       <div className="left">
         {isWall ? <WallControls /> : <Controls />}
         <div className="left-detail">{isWall ? <PanelDetail /> : <BrickDetail r={result} />}</div>
       </div>
-      <div className="right">{isWall ? <WallReadout /> : <Readout r={result} />}</div>
+      <div className="right">
+        <div className="segmented constr">
+          <button className={isWall ? 'on' : ''} onClick={() => setConstruction('wall')}>
+            <span>StrawPanel Wall</span><em>straw panels</em>
+          </button>
+          <button className={!isWall ? 'on' : ''} onClick={() => setConstruction('dome')}>
+            <span>Pizza Dome</span><em>Goldberg</em>
+          </button>
+        </div>
+        {isWall ? <WallReadout /> : <Readout r={result} />}
+      </div>
       {isWall
         ? <>
             <div className="bottom"><WallExportBar /></div>

@@ -45,11 +45,12 @@ body { overflow: hidden; background: var(--bg); color: var(--ink); }
 .left > .controls { flex: 1 1 auto; overflow-y: auto; overflow-x: hidden; min-height: 0; max-height: none; }
 .left-detail { flex: none; border-top: 1px solid var(--line); }
 .right { position: absolute; top: 20px; right: 20px; width: min(260px, calc(100vw - 40px)); z-index: 10; }
+.gizmo { position: absolute; top: 20px; right: 296px; width: 116px; height: 116px; z-index: 11; opacity: 0.55; transition: opacity 0.18s ease; } /* top-right, just left of the readout panel */
+.gizmo:hover { opacity: 1; }
 .readout { max-height: calc(100vh - 40px); overflow-y: auto; overflow-x: hidden; }
 
-/* top construction switch */
-.topbar { position: absolute; top: 52px; left: 50%; transform: translateX(-50%); z-index: 11; background: var(--glass); backdrop-filter: blur(16px) saturate(1.3); -webkit-backdrop-filter: blur(16px) saturate(1.3); border: 1px solid var(--line); border-radius: 12px; padding: 5px; }
-.segmented.constr { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin: 0; width: min(300px, calc(100vw - 40px)); }
+/* construction switch (top of the right panel, above Parts List) */
+.segmented.constr { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin: 0 0 10px; width: 100%; }
 .segmented.constr button { padding: 5px 8px; }
 
 .panel-title { font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); margin-bottom: 9px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
@@ -130,7 +131,7 @@ body { overflow: hidden; background: var(--bg); color: var(--ink); }
 .specsheet { display: none; }
 @media print {
   html, body, #root, .app { background: #fff !important; }
-  .left, .right, .bottom, .brand, .stage, .detail-dock, .topbar { display: none !important; }
+  .left, .right, .bottom, .brand, .stage, .detail-dock, .gizmo { display: none !important; }
   .specsheet { display: block; background: #fff; color: #111; font-family: 'Inter', system-ui, sans-serif; padding: 24px; }
   .ss-title h1 { font-size: 21px; margin: 0 0 2px; }
   .ss-sub { color: #666; font-size: 12px; margin: 0 0 16px; }
@@ -171,4 +172,5 @@ body { overflow: hidden; background: var(--bg); color: var(--ink); }
   .left { bottom: 70px; } .right { top: 56px; }
   .bottom { bottom: 12px; }
   .left-detail { display: none; }
+  .gizmo { display: none; } /* no room on narrow screens */
 }
