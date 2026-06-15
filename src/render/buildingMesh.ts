@@ -2,9 +2,33 @@ import * as THREE from 'three';
 import { panelizeSurface } from '../core/wall/panelize';
 import { wallPlacements, footprintCenter, footprintBBox, floorCassettes, type BuildingModel } from '../core/building/model';
 import { roofGeom, tileRect } from '../core/roof/roofize';
+import { wallPanelFrame } from '../core/panel/wallPanel';
 import { PANEL_COLORS } from './wallMesh';
 
 const ROOF_T = 0.18; // roof slab thickness (m)
+const STUD_D = 0.045; // stud depth across thickness (m)
+
+/** Render a standard wall panel as its internal frame (twin studs + top/bottom plates). */
+function addPanelFrame(group: THREE.Group, p: { w: number; h: number; type: string; ok: boolean }, cx: number, cy: number, cz: number, theta: number, tM: number) {
+  const pg = new THREE.Group();
+  pg.position.set(cx, cy, cz); pg.rotation.y = theta;
+  const Wm = p.w / 1000, Hm = p.h / 1000;
+  const zoff = tM / 2 - STUD_D / 2;
+  const tag = { shapeLabel: `${p.type}:${Math.round(p.w)}x${Math.round(p.h)}`, panelType: p.type, w: p.w, h: p.h, ok: p.ok };
+  for (const mbr of wallPanelFrame({ widthMm: p.w, heightMm: p.h, studPitchMm: 600, studWidthMm: 45, plateMm: 45 })) {
+    const mw = mbr.w / 1000, mh = mbr.h / 1000;
+    const lx = (mbr.x + mbr.w / 2) / 1000 - Wm / 2;
+    const ly = (mbr.y + mbr.h / 2) / 1000 - Hm / 2;
+    const isPlate = mbr.el === 'plate';
+    const color = isPlate ? 0xcdb38a : 0xb9935f;
+    const geo = new THREE.BoxGeometry(mw, mh, isPlate ? tM : STUD_D);
+    const mesh = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color, roughness: 0.85, metalness: 0 }));
+    mesh.position.set(lx, ly, isPlate ? 0 : (mbr.branch === 'interior' ? zoff : -zoff));
+    mesh.userData = { ...tag, baseColor: color };
+    pg.add(mesh);
+  }
+  group.add(pg);
+}
 
 function addSlope(group: THREE.Group, origin: THREE.Vector3, uDir: THREE.Vector3, vDir: THREE.Vector3, widthMm: number, rafterMm: number, moduleMm: number) {
   const sg = new THREE.Group();
@@ -80,7 +104,7 @@ function addRoof(group: THREE.Group, m: BuildingModel) {
  * each wall panelized and placed in 3D (panel width along the edge, height up,
  * thickness along the edge normal). Centred on the footprint, standing on y = 0.
  */
-export function buildBuildingGroup(m: BuildingModel): THREE.Group {
+export function buildBuildingGroup(m: BuildingModel, frameView = false): THREE.Group {
   const group = new THREE.Group();
   const c = footprintCenter(m.footprint);
   const t = m.wallThicknessMm / 1000;
@@ -91,6 +115,10 @@ export function buildBuildingGroup(m: BuildingModel): THREE.Group {
       if (p.type === 'void') continue;
       const u = p.x + p.w / 2;
       const planX = pl.a.x + pl.dir.x * u, planY = pl.a.y + pl.dir.y * u;
+      if (frameView && p.type === 'standard') {
+        addPanelFrame(group, p, (planX - c.x) / 1000, (p.y + p.h / 2) / 1000, (planY - c.y) / 1000, theta, t);
+        continue;
+      }
       const w = p.w / 1000, h = p.h / 1000;
       const geo = new THREE.BoxGeometry(w * 0.985, h * 0.985, t);
       const color = p.ok ? PANEL_COLORS[p.type] : PANEL_COLORS.bad;

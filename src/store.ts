@@ -32,6 +32,7 @@ interface OvenStore extends OvenParams {
   roofPitchDeg: number;
   roofModuleMm: number;
   roofRateEur: number;
+  frameView: boolean; // show internal twin-stud frame instead of solid straw
   set: <K extends keyof OvenParams>(key: K, value: OvenParams[K]) => void;
   setBase: (b: BaseSolid) => void;
   setView: (v: ViewMode) => void;
@@ -46,6 +47,7 @@ interface OvenStore extends OvenParams {
   setFloorAxis: (a: 'x' | 'y') => void;
   setRoofType: (t: 'flat' | 'gable' | 'mono') => void;
   setRoof: (key: 'roofPitchDeg' | 'roofModuleMm' | 'roofRateEur', value: number) => void;
+  setFrameView: (on: boolean) => void;
 }
 
 export const useOven = create<OvenStore>((set) => ({
@@ -66,6 +68,7 @@ export const useOven = create<OvenStore>((set) => ({
   roofPitchDeg: 30,
   roofModuleMm: 800,
   roofRateEur: 160,
+  frameView: false,
   set: (key, value) => set({ [key]: value } as Partial<OvenParams>),
   setBase: (base) => set({ base }),
   setView: (view) => set({ view }),
@@ -82,4 +85,5 @@ export const useOven = create<OvenStore>((set) => ({
   setFloorAxis: (floorSpanAxis) => set({ floorSpanAxis }),
   setRoofType: (roofType) => set({ roofType }),
   setRoof: (key, value) => set({ [key]: value }),
+  setFrameView: (frameView) => set({ frameView }),
 }));

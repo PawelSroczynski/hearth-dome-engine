@@ -41,6 +41,16 @@ export function WallControls() {
         <Slider label="Panel width (target)" value={s.wall.targetWidthMm} min={400} max={850} step={10}
           display={mm(s.wall.targetWidthMm)} onChange={(v) => s.setWall('targetWidthMm', v)} />
 
+        <div className="seg-label">View</div>
+        <div className="segmented" style={{ gridTemplateColumns: '1fr 1fr' }}>
+          <button className={!s.frameView ? 'on' : ''} onClick={() => s.setFrameView(false)}>
+            <span>Straw</span><em>solid</em>
+          </button>
+          <button className={s.frameView ? 'on' : ''} onClick={() => s.setFrameView(true)}>
+            <span>Frame</span><em>twin-stud</em>
+          </button>
+        </div>
+
         <div className="seg-label">Door</div>
         <Slider label="Door position" value={door.x} min={0} max={Math.max(0, s.wall.lengthMm - door.w)} step={50}
           display={mm(door.x)} onChange={(v) => s.setOpening(0, { x: v })} />

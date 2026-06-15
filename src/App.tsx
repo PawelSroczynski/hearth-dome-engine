@@ -49,6 +49,7 @@ export default function App() {
   const roofType = useOven((s) => s.roofType);
   const roofPitchDeg = useOven((s) => s.roofPitchDeg);
   const roofModuleMm = useOven((s) => s.roofModuleMm);
+  const frameView = useOven((s) => s.frameView);
   const params = useMemo<OvenParams>(
     () => ({ base, frequency, subdivisionClass, classIIIn: classIIInVal, interiorMm, thicknessMm, cutAngleDeg }),
     [base, frequency, subdivisionClass, classIIInVal, interiorMm, thicknessMm, cutAngleDeg],
@@ -136,7 +137,7 @@ export default function App() {
       const depth = wall.depthMm ?? 4000;
       group = buildBuildingGroup(buildingFromWall(wall, depth,
         { moduleWidthMm: floorModuleMm, thicknessMm: floorThicknessMm, spanAxis: floorSpanAxis },
-        { type: roofType, pitchDeg: roofPitchDeg, ridgeAxis: 'x', moduleWidthMm: roofModuleMm }));
+        { type: roofType, pitchDeg: roofPitchDeg, ridgeAxis: 'x', moduleWidthMm: roofModuleMm }), frameView);
       floorR = Math.max(wall.lengthMm, depth) / 1000 * 0.85;
       ctx.floor.position.y = -(floorThicknessMm / 1000) - 0.02; // decorative disc below the slab
     } else if (view === 'mould') {
@@ -156,7 +157,7 @@ export default function App() {
     if (construction !== 'wall') ctx.floor.position.y = 0;
     ctx.floor.geometry.dispose();
     ctx.floor.geometry = new THREE.CircleGeometry(floorR, 64);
-  }, [result, view, mouldWallMm, mouldFlangeMm, construction, wall, floorModuleMm, floorThicknessMm, floorSpanAxis, roofType, roofPitchDeg, roofModuleMm]);
+  }, [result, view, mouldWallMm, mouldFlangeMm, construction, wall, floorModuleMm, floorThicknessMm, floorSpanAxis, roofType, roofPitchDeg, roofModuleMm, frameView]);
 
   // reframe the camera when switching construction type
   useEffect(() => {
