@@ -31,6 +31,19 @@ export interface WallSpec {
   openings: Opening[];
 }
 
+/**
+ * Element-agnostic planar surface to panelize (wall / floor / roof face). Panels
+ * come back in LOCAL 2D coordinates (origin bottom-left); a caller places them in
+ * 3D via the surface's frame. `panelize(WallSpec)` is a thin wrapper over this.
+ */
+export interface SurfaceSpec {
+  widthMm: number;
+  heightMm: number;
+  thicknessMm: number;
+  targetWidthMm: number;
+  openings: Opening[];
+}
+
 export interface Panel {
   type: PanelType;
   x: number; y: number; w: number; h: number; // mm, origin at wall bottom-left
@@ -64,8 +77,17 @@ function solidIntervals(lengthMm: number, openings: Opening[]): [number, number]
   return out;
 }
 
+/** Wall convenience wrapper: a wall is just a surface of width = length. */
 export function panelize(spec: WallSpec): Panel[] {
-  const { lengthMm, heightMm, targetWidthMm, openings } = spec;
+  return panelizeSurface({
+    widthMm: spec.lengthMm, heightMm: spec.heightMm, thicknessMm: spec.thicknessMm,
+    targetWidthMm: spec.targetWidthMm, openings: spec.openings,
+  });
+}
+
+export function panelizeSurface(spec: SurfaceSpec): Panel[] {
+  const { widthMm, heightMm, targetWidthMm, openings } = spec;
+  const lengthMm = widthMm;
   const panels: Panel[] = [];
   const target = Math.min(Math.max(targetWidthMm, PANEL_LIMITS.standard.wMin), PANEL_LIMITS.standard.wMax);
 

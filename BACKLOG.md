@@ -5,6 +5,32 @@ Status of features vs the original geohack tool, plus ideas harvested from the
 
 Legend: 🔴 high · 🟡 medium · 🟢 low · ✅ done
 
+## Building → panels (StrawPanel from a floor plan + full geometry)
+
+Strategy: every element (wall / floor / roof face) is a planar **surface**;
+`panelizeSurface(width,height,openings,catalog)` fills it in 2D and a frame places
+it in 3D. One `BuildingModel` (footprint + wall height + roof spec + floor spec) is
+the single source of truth; walls come from footprint edges, floor from the polygon,
+roof from the roof spec. BOM + cost aggregate across all elements.
+
+- ✅ **Phase 0 — `BuildingModel` schema** (`core/building/model.ts`): footprint,
+  per-edge openings, roof/floor specs; `rectangleFootprint`, `wallSurfaces`,
+  `footprintAreaMm2`.
+- ✅ **Phase 1 — `panelizeSurface`** (element-agnostic); `panelize(wall)` delegates;
+  regression test proves identical wall output.
+- 🔴 **Phase 2 — building from footprint**: auto-generate the 4+ walls from edges,
+  render together; corners = butt joints (flagged) for now.
+- 🟡 **Phase 3 — floor slab**: footprint polygon → modular floor cassettes (grid).
+- 🟡 **Phase 4 — roof**: gable/mono → sloped faces → panelize (inclined panel types).
+- 🔴 **Phase 5 — junctions / node solving**: corner Column (C), eaves, base — the hard
+  3D joints (leverage acidome `Connector` / `Plane.average` / miter). Don't under-scope.
+- 🟡 **Phase 6 — input**: in-app 2D plan sketcher (synergy with SiteFit map/draw) and/or
+  IFC/DXF import.
+
+Honest caveats: floor/roof "modular like walls" is **our** catalog decision (not native
+EcoCocon, which is walls + inclined gable); junctions are where complexity explodes;
+validation (panel ranges, joint feasibility) must travel with the geometry.
+
 ## Construction types
 
 - ✅ **Top-level construction switch: Pizza Dome ↔ StrawPanel Wall.** EcoCocon straw
