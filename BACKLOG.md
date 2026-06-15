@@ -27,6 +27,16 @@ Legend: 🔴 high · 🟡 medium · 🟢 low · ✅ done
 - 🟡 **Cut angle affects 3D + counts (#15)** — currently only 90° hemisphere in 3D.
 - 🟡 **2D net / unfold** — flattened brick pattern for cutting. Reference: acidome
   `Looker.pointToPlane` / `planeToPoint`.
+- 🔴 **Subdivision class I / II / III** — we currently support **only Class I**
+  (`subdivideGeodesic` → GP(n,0)). Class II = GP(m,m) ("triacon", e.g. soccer-ball
+  GP(1,1)) rotates the whole tessellation ~30°, which **rotates every pentagon about
+  its own normal** → flips side-pentagon orientation **vertex-down ↔ edge-down while
+  KEEPING the pentagon apex** (pentad). This is the key lever for the "pentagon edge
+  parallel to base" request — verified practically on acidome (switching class I↔II).
+  Reference: acidome `subdivisionScheme` / "make a Class III M,N subdivision scheme".
+  Action: implement Class II (and III GP(m,n), chiral) subdivision + a class selector;
+  re-calibrate orientation parity vs acidome once it exists. Supersedes the seating
+  route below for this use-case (seating changes the apex; class does not).
 - 🟡 **Symmetry-axis seating (pentad / diad / triad)** — rotate the base solid so a
   chosen symmetry axis is vertical *before* subdivision (acidome pattern: `Figure.js`
   `switch(params.symmetry)` → `rotate(atan(a/b))` pentad, `asin(2/(√3+√15))` triad).
