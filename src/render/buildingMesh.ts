@@ -38,9 +38,23 @@ function addTriangle(group: THREE.Group, a: THREE.Vector3, b: THREE.Vector3, c: 
 }
 
 function addRoof(group: THREE.Group, m: BuildingModel) {
-  if (m.roof.type === 'flat') return;
   const { L, D } = footprintBBox(m.footprint);
   const Lm = L / 1000, Dm = D / 1000, Hm = m.wallHeightMm / 1000;
+  if (m.roof.type === 'flat') {
+    // horizontal roof deck on top of the walls
+    for (const p of tileRect(L, D, m.roof.moduleWidthMm, 'roof')) {
+      const w = p.w / 1000, h = p.h / 1000;
+      const geo = new THREE.BoxGeometry(w * 0.985, ROOF_T, h * 0.985);
+      const color = p.ok ? PANEL_COLORS.roof : PANEL_COLORS.bad;
+      const mesh = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color, roughness: 0.9, metalness: 0 }));
+      mesh.position.set((p.x + p.w / 2 - L / 2) / 1000, Hm + ROOF_T / 2, (p.y + p.h / 2 - D / 2) / 1000);
+      mesh.userData = { shapeLabel: `roof:${Math.round(p.w)}x${Math.round(p.h)}`, panelType: 'roof', w: p.w, h: p.h, ok: p.ok, baseColor: color };
+      group.add(mesh);
+      const line = new THREE.LineSegments(new THREE.EdgesGeometry(geo, 1), new THREE.LineBasicMaterial({ color: 0x2a1c12, transparent: true, opacity: 0.4 }));
+      line.position.copy(mesh.position); group.add(line);
+    }
+    return;
+  }
   const g = roofGeom(L, D, m.roof.pitchDeg, m.roof.type);
   const riseM = g.riseMm / 1000;
   const mod = m.roof.moduleWidthMm;

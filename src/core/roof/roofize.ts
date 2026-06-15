@@ -48,8 +48,9 @@ export function tileRect(widthMm: number, lengthMm: number, moduleMm: number, ty
   return out;
 }
 
-/** Roof covering panels (all slopes) as a flat BOM list (type 'roof'). */
+/** Roof covering panels as a flat BOM list (type 'roof'). Flat = horizontal deck L×D. */
 export function roofTiles(L: number, D: number, pitchDeg: number, type: RoofType, moduleMm: number): Panel[] {
+  if (type === 'flat') return tileRect(L, D, moduleMm, 'roof');
   return roofGeom(L, D, pitchDeg, type).slopes.flatMap((s) => tileRect(s.widthMm, s.rafterMm, moduleMm, 'roof'));
 }
 
@@ -63,6 +64,7 @@ export function gableInfills(L: number, D: number, pitchDeg: number, type: RoofT
 
 /** True covered area (m²) of roof slopes + triangular gables. */
 export function roofAreaMm2(L: number, D: number, pitchDeg: number, type: RoofType): number {
+  if (type === 'flat') return L * D;
   const g = roofGeom(L, D, pitchDeg, type);
   const slope = g.slopes.reduce((s, x) => s + x.widthMm * x.rafterMm, 0);
   const gable = 0.5 * g.gableBaseMm * g.gableHeightMm * g.gableCount;

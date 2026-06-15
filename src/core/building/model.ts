@@ -91,7 +91,6 @@ export function buildingFromWall(wall: WallSpec, depthMm: number, floor?: FloorS
 /** Roof covering panels + gable infills as a flat BOM list. */
 export function roofPanels(m: BuildingModel): Panel[] {
   const { L, D } = footprintBBox(m.footprint);
-  if (m.roof.type === 'flat') return [];
   return [
     ...roofTiles(L, D, m.roof.pitchDeg, m.roof.type, m.roof.moduleWidthMm),
     ...gableInfills(L, D, m.roof.pitchDeg, m.roof.type),
