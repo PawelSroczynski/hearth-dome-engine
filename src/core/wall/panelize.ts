@@ -1,0 +1,125 @@
+/**
+ * EcoCocon straw-wall panelizer (MVP). A wall (length × height × thickness) with
+ * rectangular openings is split into prefab straw panels:
+ *   - vertical STANDARD panels across solid stretches (≤ 850 mm wide),
+ *   - a LINTEL band above each opening, a SILL band below each window,
+ *   - the opening itself is a VOID.
+ * Panels tile the wall exactly. Each panel is checked against EcoCocon size
+ * ranges; out-of-range panels are flagged (ok=false) rather than silently split.
+ *
+ * Dimension ranges (EcoCocon Technical Specification v2.2):
+ *   standard: width 400–850 mm, height 400–3000 mm
+ *   lintel:   width 400–3000 mm, height 424–850 mm
+ *   sill:     width 600–3000 mm, height 424–850 mm
+ *   thickness 300–400 mm
+ */
+
+export type PanelType = 'standard' | 'lintel' | 'sill' | 'void';
+
+export interface Opening {
+  x: number;      // left edge from wall start (mm)
+  w: number;      // width (mm)
+  sillH: number;  // bottom of opening above floor (0 = door) (mm)
+  headH: number;  // top of opening above floor (mm)
+}
+
+export interface WallSpec {
+  lengthMm: number;
+  heightMm: number;
+  thicknessMm: number;
+  targetWidthMm: number; // preferred standard-panel width (clamped 400–850)
+  openings: Opening[];
+}
+
+export interface Panel {
+  type: PanelType;
+  x: number; y: number; w: number; h: number; // mm, origin at wall bottom-left
+  ok: boolean; // within EcoCocon range for its type
+}
+
+export const PANEL_LIMITS: Record<Exclude<PanelType, 'void'>, { wMin: number; wMax: number; hMin: number; hMax: number }> = {
+  standard: { wMin: 400, wMax: 850, hMin: 400, hMax: 3000 },
+  lintel: { wMin: 400, wMax: 3000, hMin: 424, hMax: 850 },
+  sill: { wMin: 600, wMax: 3000, hMin: 424, hMax: 850 },
+};
+export const THICKNESS_MIN = 300;
+export const THICKNESS_MAX = 400;
+
+function inRange(type: Exclude<PanelType, 'void'>, w: number, h: number): boolean {
+  const L = PANEL_LIMITS[type];
+  return w >= L.wMin - 0.5 && w <= L.wMax + 0.5 && h >= L.hMin - 0.5 && h <= L.hMax + 0.5;
+}
+
+/** Solid x-intervals of the wall = [0,length] minus the openings' x-ranges. */
+function solidIntervals(lengthMm: number, openings: Opening[]): [number, number][] {
+  const cuts = [...openings].sort((a, b) => a.x - b.x);
+  const out: [number, number][] = [];
+  let cursor = 0;
+  for (const o of cuts) {
+    const a = Math.max(0, o.x), b = Math.min(lengthMm, o.x + o.w);
+    if (a > cursor) out.push([cursor, a]);
+    cursor = Math.max(cursor, b);
+  }
+  if (cursor < lengthMm) out.push([cursor, lengthMm]);
+  return out;
+}
+
+export function panelize(spec: WallSpec): Panel[] {
+  const { lengthMm, heightMm, targetWidthMm, openings } = spec;
+  const panels: Panel[] = [];
+  const target = Math.min(Math.max(targetWidthMm, PANEL_LIMITS.standard.wMin), PANEL_LIMITS.standard.wMax);
+
+  // solid stretches -> vertical standard strips (full height, stacked if > 3000)
+  for (const [a, b] of solidIntervals(lengthMm, openings)) {
+    const span = b - a;
+    if (span < 1) continue;
+    const n = Math.max(1, Math.ceil(span / target)); // ceil => strip width ≤ target ≤ 850
+    const stripW = span / n;
+    for (let i = 0; i < n; i++) {
+      const x = a + i * stripW;
+      addColumn(panels, x, stripW, 0, heightMm, 'standard');
+    }
+  }
+
+  // openings -> void + sill (below) + lintel (above)
+  for (const o of openings) {
+    const x = Math.max(0, o.x), w = Math.min(lengthMm, o.x + o.w) - x;
+    if (w < 1) continue;
+    const sillH = Math.max(0, Math.min(o.sillH, heightMm));
+    const headH = Math.max(sillH, Math.min(o.headH, heightMm));
+    panels.push({ type: 'void', x, y: sillH, w, h: headH - sillH, ok: true });
+    if (sillH > 0) panels.push({ type: 'sill', x, y: 0, w, h: sillH, ok: inRange('sill', w, sillH) });
+    if (headH < heightMm) {
+      const h = heightMm - headH;
+      panels.push({ type: 'lintel', x, y: headH, w, h, ok: inRange('lintel', w, h) });
+    }
+  }
+  return panels;
+}
+
+/** A full-height column split vertically into ≤3000 mm standard panels. */
+function addColumn(out: Panel[], x: number, w: number, y0: number, y1: number, type: 'standard') {
+  const total = y1 - y0;
+  const hMax = PANEL_LIMITS.standard.hMax;
+  const n = Math.max(1, Math.ceil(total / hMax));
+  const h = total / n;
+  for (let i = 0; i < n; i++) {
+    out.push({ type, x, y: y0 + i * h, w, h, ok: inRange('standard', w, h) });
+  }
+}
+
+export interface BomRow { type: PanelType; w: number; h: number; count: number; ok: boolean }
+
+/** Bill of materials: group identical panels (type + rounded w×h). Voids excluded. */
+export function wallBom(panels: Panel[]): BomRow[] {
+  const map = new Map<string, BomRow>();
+  for (const p of panels) {
+    if (p.type === 'void') continue;
+    const w = Math.round(p.w), h = Math.round(p.h);
+    const key = `${p.type}:${w}x${h}`;
+    const row = map.get(key);
+    if (row) row.count++;
+    else map.set(key, { type: p.type, w, h, count: 1, ok: p.ok });
+  }
+  return [...map.values()].sort((a, b) => a.type.localeCompare(b.type) || b.count - a.count);
+}

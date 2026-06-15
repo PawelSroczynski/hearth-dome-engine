@@ -5,6 +5,18 @@ Status of features vs the original geohack tool, plus ideas harvested from the
 
 Legend: 🔴 high · 🟡 medium · 🟢 low · ✅ done
 
+## Construction types
+
+- ✅ **Top-level construction switch: Pizza Dome ↔ StrawPanel Wall.** EcoCocon straw
+  panelizer MVP (`core/wall/panelize.ts`): solid stretches → vertical standard panels
+  (≤850 mm), openings → void + lintel (above) + sill (below window); exact tiling +
+  EcoCocon range validation (out-of-range flagged). Panels behave like dome bricks
+  (click → highlight type, panel-detail viewport with dimensions/angles, BOM rows
+  clickable). Rational cost estimate = panel area (m², as shown in 3D) × €/m² rate
+  (editable assumption; EcoCocon prices by exterior wall area excl. openings).
+- 🟢 Wall next: per-panel STL/ZIP export; corner Column (C) + Braced (B) panel types;
+  multiple/edited openings; stacked panels for walls > 3000 mm; sourced €/m² rate.
+
 ## Committed / must-have
 
 - 🔴 **Node solving (connector hubs / "rozwiązanie węzłów")** — solve the geometry

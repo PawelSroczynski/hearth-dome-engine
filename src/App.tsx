@@ -4,6 +4,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { computeOven, type OvenParams } from './core/engine';
 import { buildDomeGroup, alignUpToY } from './render/domeMesh';
 import { buildMouldGroup } from './render/mouldMesh';
+import { buildWallGroup } from './render/wallMesh';
 import { shapeSignature } from './core/bricks/schedule';
 import { useOven } from './store';
 import { Controls } from './ui/Controls';
@@ -11,6 +12,9 @@ import { Readout } from './ui/Readout';
 import { ExportBar } from './ui/ExportBar';
 import { SpecSheet } from './ui/SpecSheet';
 import { BrickDetail } from './ui/BrickDetail';
+import { WallControls } from './ui/WallControls';
+import { WallReadout } from './ui/WallReadout';
+import { PanelDetail } from './ui/PanelDetail';
 import './App.css';
 
 export default function App() {
@@ -21,6 +25,9 @@ export default function App() {
   } | null>(null);
   const setSelected = useOven((s) => s.setSelected);
   const selected = useOven((s) => s.selected);
+  const construction = useOven((s) => s.construction);
+  const setConstruction = useOven((s) => s.setConstruction);
+  const wall = useOven((s) => s.wall);
 
   // select primitives individually (stable refs) to avoid re-render loops
   const base = useOven((s) => s.base);
@@ -113,7 +120,11 @@ export default function App() {
       });
     }
     let group: THREE.Group;
-    if (view === 'mould') {
+    let floorR = 0.5;
+    if (construction === 'wall') {
+      group = buildWallGroup(wall).group;
+      floorR = Math.max(wall.lengthMm, 2000) / 1000 * 0.7;
+    } else if (view === 'mould') {
       group = buildMouldGroup(result.shapes, {
         innerRMm: result.specs.innerDiaMm / 2, thicknessMm: result.specs.wallMm,
         wallMm: mouldWallMm, flangeMm: mouldFlangeMm,
@@ -123,13 +134,29 @@ export default function App() {
       group = buildDomeGroup(result.faces, result.up, result.specs.innerDiaMm / 2, result.specs.wallMm, 0,
         (f) => labelBySig.get(shapeSignature(f)));
       alignUpToY(group, result.up);
+      floorR = result.specs.innerDiaMm / 2000;
     }
     ctx.scene.add(group);
     ctx.dome = group;
-    const r = result.specs.innerDiaMm / 2000;
     ctx.floor.geometry.dispose();
-    ctx.floor.geometry = new THREE.CircleGeometry(view === 'mould' ? 0.5 : r, 64);
-  }, [result, view, mouldWallMm, mouldFlangeMm]);
+    ctx.floor.geometry = new THREE.CircleGeometry(floorR, 64);
+  }, [result, view, mouldWallMm, mouldFlangeMm, construction, wall]);
+
+  // reframe the camera when switching construction type
+  useEffect(() => {
+    const ctx = sceneRef.current;
+    if (!ctx) return;
+    if (construction === 'wall') {
+      const wM = wall.lengthMm / 1000, hM = wall.heightMm / 1000;
+      const dist = Math.max(wM, hM) * 1.1 + 1.5;
+      ctx.camera.position.set(0, hM * 0.55, dist);
+      ctx.controls.target.set(0, hM * 0.5, 0);
+    } else {
+      ctx.camera.position.set(0.95, 0.75, 1.15);
+      ctx.controls.target.set(0, 0.2, 0);
+    }
+    ctx.controls.update();
+  }, [construction, wall.lengthMm, wall.heightMm]);
 
   // highlight the selected shape type
   useEffect(() => {
@@ -143,20 +170,37 @@ export default function App() {
       mat.emissive.setHex(on ? 0xff9a4d : 0x000000);
       mat.emissiveIntensity = on ? 0.45 : 0;
     });
-  }, [selected, result, view, mouldWallMm, mouldFlangeMm]);
+  }, [selected, result, view, mouldWallMm, mouldFlangeMm, construction, wall]);
 
+  const isWall = construction === 'wall';
   return (
     <div className="app">
       <div ref={mount} className="stage" />
       <div className="brand">
-        <strong>Hearth Dome Engine</strong>
-        <span>Goldberg pizza-oven mold · v2</span>
+        <strong>{isWall ? 'StrawPanel Wall' : 'Hearth Dome Engine'}</strong>
+        <span>{isWall ? 'straw-panel wall · panelizer' : 'Goldberg pizza-oven mold · v2'}</span>
       </div>
-      <div className="left"><Controls /></div>
-      <div className="right"><Readout r={result} /></div>
-      <div className="detail-dock"><BrickDetail r={result} /></div>
-      <div className="bottom"><ExportBar params={params} result={result} /></div>
-      <SpecSheet params={params} result={result} />
+
+      <div className="topbar">
+        <div className="segmented constr">
+          <button className={!isWall ? 'on' : ''} onClick={() => setConstruction('dome')}>
+            <span>Pizza Dome</span><em>Goldberg</em>
+          </button>
+          <button className={isWall ? 'on' : ''} onClick={() => setConstruction('wall')}>
+            <span>StrawPanel Wall</span><em>straw panels</em>
+          </button>
+        </div>
+      </div>
+
+      <div className="left">{isWall ? <WallControls /> : <Controls />}</div>
+      <div className="right">{isWall ? <WallReadout /> : <Readout r={result} />}</div>
+      {isWall
+        ? <div className="detail-dock"><PanelDetail /></div>
+        : <>
+            <div className="detail-dock"><BrickDetail r={result} /></div>
+            <div className="bottom"><ExportBar params={params} result={result} /></div>
+            <SpecSheet params={params} result={result} />
+          </>}
     </div>
   );
 }
