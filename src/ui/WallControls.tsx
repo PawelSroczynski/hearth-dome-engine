@@ -44,12 +44,8 @@ export function WallControls() {
 
         <div className="seg-label">View</div>
         <div className="segmented" style={{ gridTemplateColumns: '1fr 1fr' }}>
-          <button className={!s.frameView ? 'on' : ''} onClick={() => s.setFrameView(false)}>
-            <span>Straw</span><em>solid</em>
-          </button>
-          <button className={s.frameView ? 'on' : ''} onClick={() => s.setFrameView(true)}>
-            <span>Frame</span><em>twin-stud</em>
-          </button>
+          <button className={!s.frameView ? 'on' : ''} onClick={() => s.setFrameView(false)}>Straw</button>
+          <button className={s.frameView ? 'on' : ''} onClick={() => s.setFrameView(true)}>Frame</button>
         </div>
 
         <div className="seg-label">Door</div>
@@ -76,19 +72,15 @@ export function WallControls() {
         <Slider label="Floor thickness" value={s.floorThicknessMm} min={150} max={400} step={10}
           display={mm(s.floorThicknessMm)} onChange={(v) => s.setFloor('floorThicknessMm', v)} />
         <div className="segmented" style={{ gridTemplateColumns: '1fr 1fr' }}>
-          <button className={s.floorSpanAxis === 'y' ? 'on' : ''} onClick={() => s.setFloorAxis('y')}>
-            <span>Span ↕</span><em>depth</em>
-          </button>
-          <button className={s.floorSpanAxis === 'x' ? 'on' : ''} onClick={() => s.setFloorAxis('x')}>
-            <span>Span ↔</span><em>length</em>
-          </button>
+          <button className={s.floorSpanAxis === 'y' ? 'on' : ''} onClick={() => s.setFloorAxis('y')}>Span ↕ depth</button>
+          <button className={s.floorSpanAxis === 'x' ? 'on' : ''} onClick={() => s.setFloorAxis('x')}>Span ↔ length</button>
         </div>
 
         <div className="seg-label">Roof (dach)</div>
         <div className="segmented">
-          <button className={s.roofType === 'gable' ? 'on' : ''} onClick={() => s.setRoofType('gable')}><span>Gable</span><em>dwuspad</em></button>
-          <button className={s.roofType === 'mono' ? 'on' : ''} onClick={() => s.setRoofType('mono')}><span>Mono</span><em>jednospad</em></button>
-          <button className={s.roofType === 'flat' ? 'on' : ''} onClick={() => s.setRoofType('flat')}><span>Flat</span><em>płaski</em></button>
+          <button className={s.roofType === 'gable' ? 'on' : ''} onClick={() => s.setRoofType('gable')}>Gable</button>
+          <button className={s.roofType === 'mono' ? 'on' : ''} onClick={() => s.setRoofType('mono')}>Mono</button>
+          <button className={s.roofType === 'flat' ? 'on' : ''} onClick={() => s.setRoofType('flat')}>Flat</button>
         </div>
         {s.roofType === 'flat' ? null : <>
           <Slider label="Roof pitch" value={s.roofPitchDeg} min={5} max={50} step={1}

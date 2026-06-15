@@ -230,12 +230,8 @@ export default function App() {
       </div>
       <div className="right">
         <div className="segmented constr">
-          <button className={isWall ? 'on' : ''} onClick={() => setConstruction('wall')}>
-            <span>StrawPanel Wall</span><em>straw panels</em>
-          </button>
-          <button className={!isWall ? 'on' : ''} onClick={() => setConstruction('dome')}>
-            <span>Pizza Dome</span><em>Goldberg</em>
-          </button>
+          <button className={isWall ? 'on' : ''} onClick={() => setConstruction('wall')}>StrawPanel</button>
+          <button className={!isWall ? 'on' : ''} onClick={() => setConstruction('dome')}>Pizza Dome</button>
         </div>
         {isWall ? <WallReadout /> : <Readout r={result} />}
       </div>
