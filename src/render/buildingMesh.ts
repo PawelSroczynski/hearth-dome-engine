@@ -30,13 +30,40 @@ function addPanelFrame(group: THREE.Group, p: { w: number; h: number; type: stri
   group.add(pg);
 }
 
-function addSlope(group: THREE.Group, origin: THREE.Vector3, uDir: THREE.Vector3, vDir: THREE.Vector3, widthMm: number, rafterMm: number, moduleMm: number) {
+/** Render a floor cassette as joists + end beams (frame view). */
+function addFloorFrame(group: THREE.Group, cz: { x: number; y: number; w: number; h: number; ok: boolean }, L: number, D: number, ft: number) {
+  const w = cz.w / 1000, h = cz.h / 1000;
+  const pg = new THREE.Group();
+  pg.position.set((cz.x + cz.w / 2 - L / 2) / 1000, -ft / 2, (cz.y + cz.h / 2 - D / 2) / 1000);
+  const tag = { shapeLabel: `cassette:${Math.round(cz.w)}x${Math.round(cz.h)}`, panelType: 'cassette', w: cz.w, h: cz.h, ok: cz.ok, baseColor: 0x9c7b52 };
+  for (const mbr of wallPanelFrame({ widthMm: cz.w, heightMm: cz.h, studPitchMm: 600, studWidthMm: 45, plateMm: 45 })) {
+    const mw = mbr.w / 1000, mh = mbr.h / 1000;
+    const mesh = new THREE.Mesh(new THREE.BoxGeometry(mw, ft, mh), new THREE.MeshStandardMaterial({ color: 0x9c7b52, roughness: 0.9, metalness: 0 }));
+    mesh.position.set((mbr.x + mbr.w / 2) / 1000 - w / 2, 0, (mbr.y + mbr.h / 2) / 1000 - h / 2);
+    mesh.userData = { ...tag };
+    pg.add(mesh);
+  }
+  group.add(pg);
+}
+
+function addSlope(group: THREE.Group, origin: THREE.Vector3, uDir: THREE.Vector3, vDir: THREE.Vector3, widthMm: number, rafterMm: number, moduleMm: number, frameView = false) {
   const sg = new THREE.Group();
   // right-handed basis (local x=uDir, y=normal, z=vDir): normal = vDir × uDir so the
   // matrix is a proper rotation (uDir × vDir would be a reflection → bad quaternion).
   const normal = new THREE.Vector3().copy(vDir).cross(uDir).normalize();
   sg.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(uDir, normal, vDir));
   sg.position.copy(origin);
+  if (frameView) {
+    for (const mbr of wallPanelFrame({ widthMm, heightMm: rafterMm, studPitchMm: moduleMm, studWidthMm: 45, plateMm: 45 })) {
+      const mw = mbr.w / 1000, mh = mbr.h / 1000;
+      const mesh = new THREE.Mesh(new THREE.BoxGeometry(mw, ROOF_T, mh), new THREE.MeshStandardMaterial({ color: 0xb56a3d, roughness: 0.9, metalness: 0 }));
+      mesh.position.set((mbr.x + mbr.w / 2) / 1000, ROOF_T / 2, (mbr.y + mbr.h / 2) / 1000);
+      mesh.userData = { shapeLabel: 'roof', panelType: 'roof', ok: true };
+      sg.add(mesh);
+    }
+    group.add(sg);
+    return;
+  }
   for (const p of tileRect(widthMm, rafterMm, moduleMm, 'roof')) {
     const w = p.w / 1000, len = p.h / 1000;
     const geo = new THREE.BoxGeometry(w * 0.985, ROOF_T, len * 0.985);
@@ -61,10 +88,21 @@ function addTriangle(group: THREE.Group, a: THREE.Vector3, b: THREE.Vector3, c: 
   group.add(mesh);
 }
 
-function addRoof(group: THREE.Group, m: BuildingModel) {
+function addRoof(group: THREE.Group, m: BuildingModel, frameView = false) {
   const { L, D } = footprintBBox(m.footprint);
   const Lm = L / 1000, Dm = D / 1000, Hm = m.wallHeightMm / 1000;
   if (m.roof.type === 'flat') {
+    if (frameView) {
+      const pg = new THREE.Group(); pg.position.set(0, Hm + ROOF_T / 2, 0);
+      for (const mbr of wallPanelFrame({ widthMm: L, heightMm: D, studPitchMm: m.roof.moduleWidthMm, studWidthMm: 45, plateMm: 45 })) {
+        const mw = mbr.w / 1000, mh = mbr.h / 1000;
+        const mesh = new THREE.Mesh(new THREE.BoxGeometry(mw, ROOF_T, mh), new THREE.MeshStandardMaterial({ color: 0xb56a3d, roughness: 0.9, metalness: 0 }));
+        mesh.position.set((mbr.x + mbr.w / 2) / 1000 - Lm / 2, 0, (mbr.y + mbr.h / 2) / 1000 - Dm / 2);
+        mesh.userData = { shapeLabel: 'roof', panelType: 'roof', ok: true };
+        pg.add(mesh);
+      }
+      group.add(pg); return;
+    }
     // horizontal roof deck on top of the walls
     for (const p of tileRect(L, D, m.roof.moduleWidthMm, 'roof')) {
       const w = p.w / 1000, h = p.h / 1000;
@@ -87,13 +125,13 @@ function addRoof(group: THREE.Group, m: BuildingModel) {
     const rafter = Math.hypot(Dm / 2, riseM);
     // front slope, and back slope = front rotated 180° about the vertical ridge axis
     // (proper rotation realising the mirror → symmetric slopes, consistent outward normals)
-    addSlope(group, V(-Lm / 2, Hm, -Dm / 2), V(1, 0, 0), V(0, riseM, Dm / 2).normalize(), L, rafter * 1000, mod);
-    addSlope(group, V(Lm / 2, Hm, Dm / 2), V(-1, 0, 0), V(0, riseM, -Dm / 2).normalize(), L, rafter * 1000, mod);
+    addSlope(group, V(-Lm / 2, Hm, -Dm / 2), V(1, 0, 0), V(0, riseM, Dm / 2).normalize(), L, rafter * 1000, mod, frameView);
+    addSlope(group, V(Lm / 2, Hm, Dm / 2), V(-1, 0, 0), V(0, riseM, -Dm / 2).normalize(), L, rafter * 1000, mod, frameView);
     for (const sx of [-Lm / 2, Lm / 2])
       addTriangle(group, V(sx, Hm, -Dm / 2), V(sx, Hm, Dm / 2), V(sx, Hm + riseM, 0), g.gableBaseMm, g.gableHeightMm, g.gableHeightMm <= 4000.5);
   } else {
     const rafter = Math.hypot(Dm, riseM);
-    addSlope(group, V(-Lm / 2, Hm, -Dm / 2), V(1, 0, 0), V(0, riseM, Dm).normalize(), L, rafter * 1000, mod);
+    addSlope(group, V(-Lm / 2, Hm, -Dm / 2), V(1, 0, 0), V(0, riseM, Dm).normalize(), L, rafter * 1000, mod, frameView);
     for (const sx of [-Lm / 2, Lm / 2])
       addTriangle(group, V(sx, Hm, -Dm / 2), V(sx, Hm, Dm / 2), V(sx, Hm + riseM, Dm / 2), g.gableBaseMm, g.gableHeightMm, g.gableHeightMm <= 4000.5);
   }
@@ -115,7 +153,7 @@ export function buildBuildingGroup(m: BuildingModel, frameView = false): THREE.G
       if (p.type === 'void') continue;
       const u = p.x + p.w / 2;
       const planX = pl.a.x + pl.dir.x * u, planY = pl.a.y + pl.dir.y * u;
-      if (frameView && p.type === 'standard') {
+      if (frameView && (p.type === 'standard' || p.type === 'lintel' || p.type === 'sill')) {
         addPanelFrame(group, p, (planX - c.x) / 1000, (p.y + p.h / 2) / 1000, (planY - c.y) / 1000, theta, t);
         continue;
       }
@@ -139,6 +177,7 @@ export function buildBuildingGroup(m: BuildingModel, frameView = false): THREE.G
   const { L, D } = footprintBBox(m.footprint);
   const ft = m.floor.thicknessMm / 1000;
   for (const cz of floorCassettes(m)) {
+    if (frameView) { addFloorFrame(group, cz, L, D, ft); continue; }
     const w = cz.w / 1000, h = cz.h / 1000;
     const geo = new THREE.BoxGeometry(w * 0.985, ft, h * 0.985);
     const color = cz.ok ? PANEL_COLORS.cassette : PANEL_COLORS.bad;
@@ -152,6 +191,6 @@ export function buildBuildingGroup(m: BuildingModel, frameView = false): THREE.G
     group.add(line);
   }
 
-  addRoof(group, m);
+  addRoof(group, m, frameView);
   return group;
 }
