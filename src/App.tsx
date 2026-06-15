@@ -25,6 +25,7 @@ export default function App() {
   // select primitives individually (stable refs) to avoid re-render loops
   const base = useOven((s) => s.base);
   const frequency = useOven((s) => s.frequency);
+  const subdivisionClass = useOven((s) => s.subdivisionClass);
   const interiorMm = useOven((s) => s.interiorMm);
   const thicknessMm = useOven((s) => s.thicknessMm);
   const cutAngleDeg = useOven((s) => s.cutAngleDeg);
@@ -32,8 +33,8 @@ export default function App() {
   const mouldWallMm = useOven((s) => s.mouldWallMm);
   const mouldFlangeMm = useOven((s) => s.mouldFlangeMm);
   const params = useMemo<OvenParams>(
-    () => ({ base, frequency, interiorMm, thicknessMm, cutAngleDeg }),
-    [base, frequency, interiorMm, thicknessMm, cutAngleDeg],
+    () => ({ base, frequency, subdivisionClass, interiorMm, thicknessMm, cutAngleDeg }),
+    [base, frequency, subdivisionClass, interiorMm, thicknessMm, cutAngleDeg],
   );
   const result = useMemo(() => computeOven(params), [params]);
 

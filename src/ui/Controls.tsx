@@ -47,7 +47,18 @@ export function Controls() {
       </div>
 
       <Slider label="Frequency" value={s.frequency} min={1} max={8} step={1}
-        display={`GP(${s.frequency},0)`} onChange={(v) => s.set('frequency', v)} />
+        display={s.subdivisionClass === 'II' ? `GP(${s.frequency},${s.frequency})` : `GP(${s.frequency},0)`}
+        onChange={(v) => s.set('frequency', v)} />
+
+      <div className="seg-label">Subdivision class</div>
+      <div className="segmented" style={{ gridTemplateColumns: '1fr 1fr' }}>
+        <button className={s.subdivisionClass === 'I' ? 'on' : ''} onClick={() => s.set('subdivisionClass', 'I')}>
+          <span>Class I</span><em>vertex-down pent</em>
+        </button>
+        <button className={s.subdivisionClass === 'II' ? 'on' : ''} onClick={() => s.set('subdivisionClass', 'II')}>
+          <span>Class II</span><em>edge-down pent</em>
+        </button>
+      </div>
       <Slider label="Interior Ø" value={s.interiorMm} min={500} max={1800} step={10}
         display={mm(s.interiorMm)} onChange={(v) => s.set('interiorMm', v)} />
       <Slider label="Brick Thickness" value={s.thicknessMm} min={25} max={200} step={5}
