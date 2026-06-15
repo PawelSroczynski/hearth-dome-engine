@@ -11,6 +11,40 @@ export const PANEL_COLORS: Record<string, number> = {
   bad: 0x9c3b2c,      // out-of-range flag
 };
 
+// HSL family per panel category: base hue/sat/lightness. Each distinct SIZE within a
+// category gets a deterministic shade (hue ±/lightness ±) so typological types read
+// apart on the 3D — like the dome colours its brick types — while keeping the
+// category meaning (terracotta lintels, olive sills, terracotta roof…).
+const TYPE_HSL: Record<string, [number, number, number]> = {
+  standard: [38, 52, 62],
+  lintel: [12, 68, 52],
+  sill: [74, 33, 48],
+  cassette: [28, 42, 50],
+  roof: [18, 58, 50],
+  gable: [34, 44, 66],
+};
+
+function hslToHex(h: number, s: number, l: number): number {
+  h = ((h % 360) + 360) % 360; s /= 100; l /= 100;
+  const a = s * Math.min(l, 1 - l);
+  const k = (n: number) => (n + h / 30) % 12;
+  const f = (n: number) => l - a * Math.max(-1, Math.min(k(n) - 3, 9 - k(n), 1));
+  const ch = (n: number) => Math.round(255 * f(n));
+  return (ch(0) << 16) | (ch(8) << 8) | ch(4);
+}
+
+/** Deterministic colour for a panel BOM key (`type:WxH`): category family + per-size shade. */
+export function panelColor(key: string): number {
+  const [type, size = ''] = key.split(':');
+  const base = TYPE_HSL[type];
+  if (!base) return PANEL_COLORS[type] ?? 0xb89b6e;
+  const [h, s, l] = base;
+  const hash = [...size].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7);
+  const hue = h + ((hash % 31) - 15);          // ±15°
+  const light = l + (((hash >> 5) % 27) - 13); // ±13%
+  return hslToHex(hue, s, Math.max(28, Math.min(74, light)));
+}
+
 /**
  * Build the EcoCocon wall: one extruded box per panel (voids skipped), coloured
  * by type. Wall lies in the XY plane (x = length, y = height), thickness along

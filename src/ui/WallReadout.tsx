@@ -4,7 +4,10 @@ import { wallBom, THICKNESS_MIN, THICKNESS_MAX } from '../core/wall/panelize';
 import { buildingFromWall, allWallPanels, floorCassettes, roofPanels } from '../core/building/model';
 import { roofAreaMm2 } from '../core/roof/roofize';
 import { heatingEstimate, wallUFromThickness, HEATING_DEFAULTS as HD } from '../core/energy/heating';
+import { panelColor } from '../render/wallMesh';
 import { CollapseToggle } from './CollapseToggle';
+
+const hex = (n: number) => `#${n.toString(16).padStart(6, '0')}`;
 
 function Row({ k, v }: { k: string; v: string | number }) {
   return <div className="ro-row"><span>{k}</span><b>{v}</b></div>;
@@ -64,7 +67,10 @@ export function WallReadout() {
             <div className={`ro-brick${selected === key ? ' sel' : ''}`} key={key}
               onClick={() => setSelected(key)}>
               <div className="ro-brick-line">
-                <span className="ro-brick-name">{r.label}</span>
+                <span className="ro-brick-name">
+                  <i className="ro-swatch" style={{ background: r.ok ? hex(panelColor(key)) : '#9c3b2c' }} />
+                  {r.label}
+                </span>
                 <b>×{r.count}</b>
               </div>
               <span className="ro-brick-meta">{r.w} × {r.h} mm {r.ok ? '' : '· out of range'}</span>

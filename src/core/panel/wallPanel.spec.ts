@@ -39,4 +39,31 @@ describe('wallPanelFrame', () => {
       expect(pitch).toBeLessThanOrEqual(850 + 1);
     }
   });
+
+  it('emits no noggings when noggingPitchMm is omitted', () => {
+    expect(wallPanelFrame(P).some((m) => m.el === 'nogging')).toBe(false);
+  });
+
+  it('emits horizontal twin noggings between the plates at the given pitch', () => {
+    const nogs = wallPanelFrame({ ...P, noggingPitchMm: 600 }).filter((m) => m.el === 'nogging');
+    expect(nogs.length).toBeGreaterThan(0);
+    // twin: equal interior/exterior counts
+    expect(nogs.filter((n) => n.branch === 'interior').length)
+      .toBe(nogs.filter((n) => n.branch === 'exterior').length);
+    // horizontal, full width, inside the plates
+    for (const n of nogs) {
+      expect(n.w).toBe(800);
+      expect(n.y).toBeGreaterThanOrEqual(45);
+      expect(n.y + n.h).toBeLessThanOrEqual(2700 - 45 + 1e-6);
+    }
+  });
+
+  it('leaves a narrow closing field at the top (noggings spaced from the bottom)', () => {
+    const ys = wallPanelFrame({ ...P, noggingPitchMm: 600 })
+      .filter((m) => m.el === 'nogging' && m.branch === 'interior')
+      .map((n) => n.y + n.h / 2)
+      .sort((a, b) => a - b);
+    const topGap = (2700 - 45) - ys[ys.length - 1]; // top plate inner face → last nogging
+    expect(topGap).toBeLessThan(600); // remainder, narrower than a full bay
+  });
 });

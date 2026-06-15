@@ -3,7 +3,7 @@ import { panelizeSurface } from '../core/wall/panelize';
 import { wallPlacements, footprintCenter, footprintBBox, floorCassettes, type BuildingModel } from '../core/building/model';
 import { roofGeom, tileRect } from '../core/roof/roofize';
 import { wallPanelFrame } from '../core/panel/wallPanel';
-import { PANEL_COLORS } from './wallMesh';
+import { PANEL_COLORS, panelColor } from './wallMesh';
 
 const ROOF_T = 0.18; // roof slab thickness (m)
 const STUD_D = 0.045; // stud depth across thickness (m)
@@ -15,12 +15,12 @@ function addPanelFrame(group: THREE.Group, p: { w: number; h: number; type: stri
   const Wm = p.w / 1000, Hm = p.h / 1000;
   const zoff = tM / 2 - STUD_D / 2;
   const tag = { shapeLabel: `${p.type}:${Math.round(p.w)}x${Math.round(p.h)}`, panelType: p.type, w: p.w, h: p.h, ok: p.ok };
-  for (const mbr of wallPanelFrame({ widthMm: p.w, heightMm: p.h, studPitchMm: 600, studWidthMm: 45, plateMm: 45 })) {
+  for (const mbr of wallPanelFrame({ widthMm: p.w, heightMm: p.h, studPitchMm: 600, studWidthMm: 45, plateMm: 45, noggingPitchMm: 600 })) {
     const mw = mbr.w / 1000, mh = mbr.h / 1000;
     const lx = (mbr.x + mbr.w / 2) / 1000 - Wm / 2;
     const ly = (mbr.y + mbr.h / 2) / 1000 - Hm / 2;
     const isPlate = mbr.el === 'plate';
-    const color = isPlate ? 0xcdb38a : 0xb9935f;
+    const color = isPlate ? 0xcdb38a : mbr.el === 'nogging' ? 0xa9824f : 0xb9935f;
     const geo = new THREE.BoxGeometry(mw, mh, isPlate ? tM : STUD_D);
     const mesh = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color, roughness: 0.85, metalness: 0 }));
     mesh.position.set(lx, ly, isPlate ? 0 : (mbr.branch === 'interior' ? zoff : -zoff));
@@ -67,10 +67,11 @@ function addSlope(group: THREE.Group, origin: THREE.Vector3, uDir: THREE.Vector3
   for (const p of tileRect(widthMm, rafterMm, moduleMm, 'roof')) {
     const w = p.w / 1000, len = p.h / 1000;
     const geo = new THREE.BoxGeometry(w * 0.985, ROOF_T, len * 0.985);
-    const color = p.ok ? PANEL_COLORS.roof : PANEL_COLORS.bad;
+    const key = `roof:${Math.round(p.w)}x${Math.round(p.h)}`;
+    const color = p.ok ? panelColor(key) : PANEL_COLORS.bad;
     const mesh = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color, roughness: 0.9, metalness: 0, side: THREE.DoubleSide }));
     mesh.position.set(p.x / 1000 + w / 2, ROOF_T / 2, p.y / 1000 + len / 2);
-    mesh.userData = { shapeLabel: `roof:${Math.round(p.w)}x${Math.round(p.h)}`, panelType: 'roof', w: p.w, h: p.h, ok: p.ok, baseColor: color };
+    mesh.userData = { shapeLabel: key, panelType: 'roof', w: p.w, h: p.h, ok: p.ok, baseColor: color };
     sg.add(mesh);
     const line = new THREE.LineSegments(new THREE.EdgesGeometry(geo, 1), new THREE.LineBasicMaterial({ color: 0x2a1c12, transparent: true, opacity: 0.4 }));
     line.position.copy(mesh.position); sg.add(line);
@@ -107,10 +108,11 @@ function addRoof(group: THREE.Group, m: BuildingModel, frameView = false) {
     for (const p of tileRect(L, D, m.roof.moduleWidthMm, 'roof')) {
       const w = p.w / 1000, h = p.h / 1000;
       const geo = new THREE.BoxGeometry(w * 0.985, ROOF_T, h * 0.985);
-      const color = p.ok ? PANEL_COLORS.roof : PANEL_COLORS.bad;
+      const key = `roof:${Math.round(p.w)}x${Math.round(p.h)}`;
+      const color = p.ok ? panelColor(key) : PANEL_COLORS.bad;
       const mesh = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color, roughness: 0.9, metalness: 0 }));
       mesh.position.set((p.x + p.w / 2 - L / 2) / 1000, Hm + ROOF_T / 2, (p.y + p.h / 2 - D / 2) / 1000);
-      mesh.userData = { shapeLabel: `roof:${Math.round(p.w)}x${Math.round(p.h)}`, panelType: 'roof', w: p.w, h: p.h, ok: p.ok, baseColor: color };
+      mesh.userData = { shapeLabel: key, panelType: 'roof', w: p.w, h: p.h, ok: p.ok, baseColor: color };
       group.add(mesh);
       const line = new THREE.LineSegments(new THREE.EdgesGeometry(geo, 1), new THREE.LineBasicMaterial({ color: 0x2a1c12, transparent: true, opacity: 0.4 }));
       line.position.copy(mesh.position); group.add(line);
@@ -159,11 +161,12 @@ export function buildBuildingGroup(m: BuildingModel, frameView = false): THREE.G
       }
       const w = p.w / 1000, h = p.h / 1000;
       const geo = new THREE.BoxGeometry(w * 0.985, h * 0.985, t);
-      const color = p.ok ? PANEL_COLORS[p.type] : PANEL_COLORS.bad;
+      const key = `${p.type}:${Math.round(p.w)}x${Math.round(p.h)}`;
+      const color = p.ok ? panelColor(key) : PANEL_COLORS.bad;
       const mesh = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color, roughness: 0.9, metalness: 0 }));
       mesh.position.set((planX - c.x) / 1000, (p.y + p.h / 2) / 1000, (planY - c.y) / 1000);
       mesh.rotation.y = theta;
-      mesh.userData = { shapeLabel: `${p.type}:${Math.round(p.w)}x${Math.round(p.h)}`, panelType: p.type, w: p.w, h: p.h, ok: p.ok, baseColor: color };
+      mesh.userData = { shapeLabel: key, panelType: p.type, w: p.w, h: p.h, ok: p.ok, baseColor: color };
       group.add(mesh);
 
       const line = new THREE.LineSegments(new THREE.EdgesGeometry(geo, 1),
@@ -180,10 +183,11 @@ export function buildBuildingGroup(m: BuildingModel, frameView = false): THREE.G
     if (frameView) { addFloorFrame(group, cz, L, D, ft); continue; }
     const w = cz.w / 1000, h = cz.h / 1000;
     const geo = new THREE.BoxGeometry(w * 0.985, ft, h * 0.985);
-    const color = cz.ok ? PANEL_COLORS.cassette : PANEL_COLORS.bad;
+    const key = `cassette:${Math.round(cz.w)}x${Math.round(cz.h)}`;
+    const color = cz.ok ? panelColor(key) : PANEL_COLORS.bad;
     const mesh = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color, roughness: 0.92, metalness: 0 }));
     mesh.position.set((cz.x + cz.w / 2 - L / 2) / 1000, -ft / 2, (cz.y + cz.h / 2 - D / 2) / 1000);
-    mesh.userData = { shapeLabel: `cassette:${Math.round(cz.w)}x${Math.round(cz.h)}`, panelType: 'cassette', w: cz.w, h: cz.h, ok: cz.ok, baseColor: color };
+    mesh.userData = { shapeLabel: key, panelType: 'cassette', w: cz.w, h: cz.h, ok: cz.ok, baseColor: color };
     group.add(mesh);
     const line = new THREE.LineSegments(new THREE.EdgesGeometry(geo, 1),
       new THREE.LineBasicMaterial({ color: 0x2a1c12, transparent: true, opacity: 0.4 }));
