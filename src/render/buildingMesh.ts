@@ -61,8 +61,10 @@ function addRoof(group: THREE.Group, m: BuildingModel) {
   const V = (x: number, y: number, z: number) => new THREE.Vector3(x, y, z);
   if (m.roof.type === 'gable') {
     const rafter = Math.hypot(Dm / 2, riseM);
+    // front slope, and back slope = front rotated 180° about the vertical ridge axis
+    // (proper rotation realising the mirror → symmetric slopes, consistent outward normals)
     addSlope(group, V(-Lm / 2, Hm, -Dm / 2), V(1, 0, 0), V(0, riseM, Dm / 2).normalize(), L, rafter * 1000, mod);
-    addSlope(group, V(-Lm / 2, Hm, Dm / 2), V(1, 0, 0), V(0, riseM, -Dm / 2).normalize(), L, rafter * 1000, mod);
+    addSlope(group, V(Lm / 2, Hm, Dm / 2), V(-1, 0, 0), V(0, riseM, -Dm / 2).normalize(), L, rafter * 1000, mod);
     for (const sx of [-Lm / 2, Lm / 2])
       addTriangle(group, V(sx, Hm, -Dm / 2), V(sx, Hm, Dm / 2), V(sx, Hm + riseM, 0), g.gableBaseMm, g.gableHeightMm, g.gableHeightMm <= 4000.5);
   } else {
