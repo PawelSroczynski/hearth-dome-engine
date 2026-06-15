@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useOven } from '../store';
+import { classIIIn } from '../core/engine';
 import { CollapseToggle } from './CollapseToggle';
 import type { BaseSolid } from '../core/goldberg/formulas';
 
@@ -29,6 +30,7 @@ const mm = (v: number) => `${Math.round(v)} mm`;
 export function Controls() {
   const s = useOven();
   const [open, setOpen] = useState(true);
+  const nIII = classIIIn(s.frequency, s.classIIIn);
   return (
     <section className="panel controls">
       <div className="panel-title">
@@ -47,18 +49,29 @@ export function Controls() {
       </div>
 
       <Slider label="Frequency" value={s.frequency} min={1} max={8} step={1}
-        display={s.subdivisionClass === 'II' ? `GP(${s.frequency},${s.frequency})` : `GP(${s.frequency},0)`}
+        display={
+          s.subdivisionClass === 'II' ? `GP(${s.frequency},${s.frequency})`
+          : s.subdivisionClass === 'III' ? `GP(${s.frequency},${nIII})`
+          : `GP(${s.frequency},0)`
+        }
         onChange={(v) => s.set('frequency', v)} />
 
       <div className="seg-label">Subdivision class</div>
-      <div className="segmented" style={{ gridTemplateColumns: '1fr 1fr' }}>
+      <div className="segmented">
         <button className={s.subdivisionClass === 'I' ? 'on' : ''} onClick={() => s.set('subdivisionClass', 'I')}>
-          <span>Class I</span><em>vertex-down pent</em>
+          <span>Class I</span><em>vertex pent</em>
         </button>
         <button className={s.subdivisionClass === 'II' ? 'on' : ''} onClick={() => s.set('subdivisionClass', 'II')}>
-          <span>Class II</span><em>edge-down pent</em>
+          <span>Class II</span><em>edge pent</em>
+        </button>
+        <button className={s.subdivisionClass === 'III' ? 'on' : ''} onClick={() => s.set('subdivisionClass', 'III')}>
+          <span>Class III</span><em>chiral</em>
         </button>
       </div>
+      {s.subdivisionClass !== 'III' ? null : (
+        <Slider label="Chiral n" value={nIII} min={1} max={Math.max(1, s.frequency - 1)} step={1}
+          display={`n = ${nIII}`} onChange={(v) => s.set('classIIIn', v)} />
+      )}
       <Slider label="Interior Ø" value={s.interiorMm} min={500} max={1800} step={10}
         display={mm(s.interiorMm)} onChange={(v) => s.set('interiorMm', v)} />
       <Slider label="Brick Thickness" value={s.thicknessMm} min={25} max={200} step={5}

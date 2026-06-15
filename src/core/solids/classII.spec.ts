@@ -21,6 +21,12 @@ describe('subdivideGoldbergCoxeter (m,n)', () => {
     }
   });
 
+  it('Class III (m≠n, chiral) is watertight (Euler=2) with 12-pentagon dual', () => {
+    const m = subdivideGoldbergCoxeter('icosa', 3, 1);
+    expect(eulerCharacteristic(m)).toBe(2);
+    expect(goldbergDual(m).filter((x) => x.sides === 5).length).toBe(12);
+  });
+
   it('Goldberg dual of Class II still has exactly 12 pentagons', () => {
     const faces = goldbergDual(subdivideGoldbergCoxeter('icosa', 2, 2));
     expect(faces.filter((x) => x.sides === 5).length).toBe(12);

@@ -34,8 +34,8 @@ Legend: 🔴 high · 🟡 medium · 🟢 low · ✅ done
   all visible pentagons edge-down** (keeps the pentagon apex — the "pentagon edge
   parallel to base" request, confirmed practically on acidome). This is why class, not
   seating, is the right lever (class keeps the apex; seating changes it).
-- 🟢 **Subdivision class III (chiral, m≠n)** — already computed correctly by the same
-  `subdivideGoldbergCoxeter` (test (2,1) passes); not yet exposed in the UI.
+- ✅ **Subdivision class III (chiral, m≠n)** — exposed in the UI: Class I/II/III
+  segment + "Chiral n" slider (n ∈ [1, m−1]); GP(m,n). TDD: (3,1) Euler=2, 12-pentagon dual.
 - 🟡 **Symmetry-axis seating (pentad / diad / triad)** — rotate the base solid so a
   chosen symmetry axis is vertical *before* subdivision (acidome pattern: `Figure.js`
   `switch(params.symmetry)` → `rotate(atan(a/b))` pentad, `asin(2/(√3+√15))` triad).
