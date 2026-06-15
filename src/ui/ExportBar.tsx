@@ -2,6 +2,7 @@ import type { OvenParams, OvenResult } from '../core/engine';
 import { domeToSTL, domeToJSON, bricksToZip, mouldsToZip, download } from '../render/exporters';
 import { makeSpecImages } from '../render/snapshot';
 import { useOven } from '../store';
+import { copyShareLink } from './copyLink';
 
 export function ExportBar({ params, result }: { params: OvenParams; result: OvenResult }) {
   const slug = `dome_${params.base}_f${params.frequency}`;
@@ -28,6 +29,7 @@ export function ExportBar({ params, result }: { params: OvenParams; result: Oven
       <button onClick={() => download(zip.name, zip.bytes(), 'application/zip')}>{zip.label}</button>
       <button onClick={() => download(`${slug}.json`, domeToJSON(params, result), 'application/json')}>JSON</button>
       <button onClick={printSpec}>Spec PDF</button>
+      <button onClick={() => copyShareLink()}>Copy link</button>
     </section>
   );
 }

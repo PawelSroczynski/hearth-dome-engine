@@ -4,6 +4,7 @@ import { makeWallImages } from '../render/wallSnapshot';
 import { wallBom } from '../core/wall/panelize';
 import { buildingFromWall, allWallPanels, floorCassettes, roofPanels } from '../core/building/model';
 import { roofAreaMm2 } from '../core/roof/roofize';
+import { copyShareLink } from './copyLink';
 
 export function WallExportBar() {
   const wall = useOven((s) => s.wall);
@@ -32,7 +33,7 @@ export function WallExportBar() {
     const fpanels = floorCassettes(model);
     const rpanels = roofPanels(model);
     const wallM2 = wpanels.reduce((s, p) => s + p.w * p.h, 0) / 1e6;
-    const floorM2 = fpanels.reduce((s, p) => s + p.w * p.h, 0) / 1e6;
+    const floorM2 = (wall.lengthMm * depth) / 1e6; // nominal footprint (length × depth)
     const roofM2 = roofAreaMm2(wall.lengthMm, depth, roofPitchDeg, roofType) / 1e6;
     const doc = {
       tool: 'strawpanel-building', version: 3,
@@ -53,6 +54,7 @@ export function WallExportBar() {
     <section className="panel exportbar">
       <button onClick={exportJSON}>JSON</button>
       <button onClick={printSpec}>Spec PDF</button>
+      <button onClick={() => copyShareLink()}>Copy link</button>
     </section>
   );
 }
