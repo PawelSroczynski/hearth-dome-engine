@@ -26,7 +26,15 @@ roof from the roof spec. BOM + cost aggregate across all elements.
   cassettes (module width, span axis, ≤6000 mm segments), rendered as flat slabs under
   the shell; cassette type in the combined BOM (Cassette A/B…), floor area + separate
   €/m² floor rate in cost; included in Spec PDF. Floor cassettes = our catalog.
-- 🟡 **Phase 4 — roof**: gable/mono → sloped faces → panelize (inclined panel types).
+- ✅ **Phase 4 — roof**: `core/roof/roofize` — gable (dwuspad) / mono (jednospad) /
+  flat; pitch + module sliders; slopes panelized (type 'roof') and rendered tilted
+  (proper right-handed basis); gable/sloped-wall ends closed with triangular infills
+  (type 'gable', placeholder). Roof panels clickable/highlight/detail like all panels
+  (recursive picking); roof area + €/m² roof rate in cost; in combined BOM + Spec PDF.
+- 🟡 **Phase 4b — gable walls (ściany szczytowe)**: finely panelize the triangular
+  gable wall tops with EcoCocon inclined/inclined-braced gable elements (today a single
+  placeholder triangle). Needs the wall panelizer to accept non-rectangular (sloped-top)
+  surfaces.
 - 🔴 **Phase 5 — junctions / node solving**: corner Column (C), eaves, base — the hard
   3D joints (leverage acidome `Connector` / `Plane.average` / miter). Don't under-scope.
 - 🟡 **Phase 6 — input**: in-app 2D plan sketcher (synergy with SiteFit map/draw) and/or

@@ -73,11 +73,26 @@ export function WallControls() {
           </button>
         </div>
 
+        <div className="seg-label">Roof (dach)</div>
+        <div className="segmented">
+          <button className={s.roofType === 'gable' ? 'on' : ''} onClick={() => s.setRoofType('gable')}><span>Gable</span><em>dwuspad</em></button>
+          <button className={s.roofType === 'mono' ? 'on' : ''} onClick={() => s.setRoofType('mono')}><span>Mono</span><em>jednospad</em></button>
+          <button className={s.roofType === 'flat' ? 'on' : ''} onClick={() => s.setRoofType('flat')}><span>Flat</span><em>płaski</em></button>
+        </div>
+        {s.roofType === 'flat' ? null : <>
+          <Slider label="Roof pitch" value={s.roofPitchDeg} min={5} max={50} step={1}
+            display={`${s.roofPitchDeg}°`} onChange={(v) => s.setRoof('roofPitchDeg', v)} />
+          <Slider label="Roof module" value={s.roofModuleMm} min={400} max={1200} step={50}
+            display={mm(s.roofModuleMm)} onChange={(v) => s.setRoof('roofModuleMm', v)} />
+        </>}
+
         <div className="seg-label">Cost estimate</div>
         <Slider label="Wall rate" value={s.wallRateEur} min={100} max={600} step={10}
           display={`€${s.wallRateEur}/m²`} onChange={(v) => s.setWallRate(v)} />
         <Slider label="Floor rate" value={s.floorRateEur} min={50} max={400} step={10}
           display={`€${s.floorRateEur}/m²`} onChange={(v) => s.setFloor('floorRateEur', v)} />
+        <Slider label="Roof rate" value={s.roofRateEur} min={50} max={500} step={10}
+          display={`€${s.roofRateEur}/m²`} onChange={(v) => s.setRoof('roofRateEur', v)} />
       </>}
     </section>
   );

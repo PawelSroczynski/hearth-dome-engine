@@ -1,5 +1,6 @@
 import { panelizeSurface, type Opening, type SurfaceSpec, type WallSpec, type Panel } from '../wall/panelize';
 import { floorize } from '../floor/floorize';
+import { roofTiles, gableInfills } from '../roof/roofize';
 
 /**
  * Building model (Phase 0) — single source of truth from which every modular
@@ -16,7 +17,7 @@ export interface Vec2 { x: number; y: number }
 export interface Footprint { points: Vec2[] }
 
 export type RoofType = 'flat' | 'mono' | 'gable';
-export interface RoofSpec { type: RoofType; pitchDeg: number; ridgeAxis: 'x' | 'y' }
+export interface RoofSpec { type: RoofType; pitchDeg: number; ridgeAxis: 'x' | 'y'; moduleWidthMm: number }
 export interface FloorSpec { moduleWidthMm: number; thicknessMm: number; spanAxis: 'x' | 'y' }
 
 export interface BuildingModel {
@@ -75,16 +76,26 @@ export function allWallPanels(m: BuildingModel): Panel[] {
 }
 
 /** Rectangular building shell from the single-wall store params (front edge holds openings). */
-export function buildingFromWall(wall: WallSpec, depthMm: number, floor?: FloorSpec): BuildingModel {
+export function buildingFromWall(wall: WallSpec, depthMm: number, floor?: FloorSpec, roof?: RoofSpec): BuildingModel {
   return {
     footprint: rectangleFootprint(wall.lengthMm, depthMm),
     wallHeightMm: wall.heightMm,
     wallThicknessMm: wall.thicknessMm,
     targetWidthMm: wall.targetWidthMm,
     openingsByEdge: [wall.openings, [], [], []],
-    roof: { type: 'flat', pitchDeg: 0, ridgeAxis: 'x' },
+    roof: roof ?? { type: 'flat', pitchDeg: 0, ridgeAxis: 'x', moduleWidthMm: 800 },
     floor: floor ?? { moduleWidthMm: 800, thicknessMm: 240, spanAxis: 'y' },
   };
+}
+
+/** Roof covering panels + gable infills as a flat BOM list. */
+export function roofPanels(m: BuildingModel): Panel[] {
+  const { L, D } = footprintBBox(m.footprint);
+  if (m.roof.type === 'flat') return [];
+  return [
+    ...roofTiles(L, D, m.roof.pitchDeg, m.roof.type, m.roof.moduleWidthMm),
+    ...gableInfills(L, D, m.roof.pitchDeg, m.roof.type),
+  ];
 }
 
 /** Footprint bounding box dimensions (mm). */

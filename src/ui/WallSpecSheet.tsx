@@ -1,6 +1,7 @@
 import { useOven } from '../store';
 import { wallBom, THICKNESS_MIN, THICKNESS_MAX } from '../core/wall/panelize';
-import { buildingFromWall, allWallPanels, floorCassettes } from '../core/building/model';
+import { buildingFromWall, allWallPanels, floorCassettes, roofPanels } from '../core/building/model';
+import { roofAreaMm2 } from '../core/roof/roofize';
 
 /** Printable build document for the StrawPanel building (hidden on screen, @media print). */
 export function WallSpecSheet() {
@@ -10,19 +11,28 @@ export function WallSpecSheet() {
   const floorModuleMm = useOven((s) => s.floorModuleMm);
   const floorThicknessMm = useOven((s) => s.floorThicknessMm);
   const floorSpanAxis = useOven((s) => s.floorSpanAxis);
+  const roofType = useOven((s) => s.roofType);
+  const roofPitchDeg = useOven((s) => s.roofPitchDeg);
+  const roofModuleMm = useOven((s) => s.roofModuleMm);
+  const roofRate = useOven((s) => s.roofRateEur);
   const images = useOven((s) => s.specImages);
   const depth = wall.depthMm ?? 4000;
   const date = new Date().toISOString().slice(0, 10);
 
-  const model = buildingFromWall(wall, depth, { moduleWidthMm: floorModuleMm, thicknessMm: floorThicknessMm, spanAxis: floorSpanAxis });
+  const model = buildingFromWall(wall, depth,
+    { moduleWidthMm: floorModuleMm, thicknessMm: floorThicknessMm, spanAxis: floorSpanAxis },
+    { type: roofType, pitchDeg: roofPitchDeg, ridgeAxis: 'x', moduleWidthMm: roofModuleMm });
   const wpanels = allWallPanels(model).filter((p) => p.type !== 'void');
   const fpanels = floorCassettes(model);
-  const bom = wallBom([...wpanels, ...fpanels]);
-  const solid = [...wpanels, ...fpanels];
+  const rpanels = roofPanels(model);
+  const bom = wallBom([...wpanels, ...fpanels, ...rpanels]);
+  const solid = [...wpanels, ...fpanels, ...rpanels];
   const wallPanelM2 = wpanels.reduce((s, p) => s + p.w * p.h, 0) / 1e6;
   const floorM2 = fpanels.reduce((s, p) => s + p.w * p.h, 0) / 1e6;
+  const roofM2 = roofAreaMm2(wall.lengthMm, depth, roofPitchDeg, roofType) / 1e6;
   const wallAreaM2 = (2 * (wall.lengthMm + depth) * wall.heightMm) / 1e6;
-  const wallCost = wallPanelM2 * rate, floorCost = floorM2 * floorRate, cost = wallCost + floorCost;
+  const wallCost = wallPanelM2 * rate, floorCost = floorM2 * floorRate, roofCost = roofM2 * roofRate;
+  const cost = wallCost + floorCost + roofCost;
   const flagged = solid.filter((p) => !p.ok).length;
   const thicknessOk = wall.thicknessMm >= THICKNESS_MIN && wall.thicknessMm <= THICKNESS_MAX;
 
@@ -66,7 +76,8 @@ export function WallSpecSheet() {
           <tr><td>Wall shell area</td><td>{wallAreaM2.toFixed(1)} m²</td></tr>
           <tr><td>Wall panel area</td><td>{wallPanelM2.toFixed(1)} m²</td></tr>
           <tr><td>Floor area</td><td>{floorM2.toFixed(1)} m²</td></tr>
-          <tr><td>Panels (walls + floor)</td><td>{solid.length}</td></tr>
+          <tr><td>Roof area ({roofType})</td><td>{roofM2.toFixed(1)} m²</td></tr>
+          <tr><td>Panels (walls + floor + roof)</td><td>{solid.length}</td></tr>
           <tr><td>Unique types</td><td>{bom.length}</td></tr>
           <tr><td>Out of range</td><td>{flagged}</td></tr>
         </tbody></table>
@@ -117,6 +128,7 @@ export function WallSpecSheet() {
         <table><tbody>
           <tr><td>Walls — {wallPanelM2.toFixed(1)} m² × €{rate}/m²</td><td>€{Math.round(wallCost).toLocaleString()}</td></tr>
           <tr><td>Floor — {floorM2.toFixed(1)} m² × €{floorRate}/m²</td><td>€{Math.round(floorCost).toLocaleString()}</td></tr>
+          <tr><td>Roof — {roofM2.toFixed(1)} m² × €{roofRate}/m²</td><td>€{Math.round(roofCost).toLocaleString()}</td></tr>
           <tr><td><b>Total</b></td><td><b>€{Math.round(cost).toLocaleString()}</b></td></tr>
         </tbody></table>
         <p className="ss-note">

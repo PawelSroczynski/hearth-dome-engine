@@ -28,6 +28,10 @@ interface OvenStore extends OvenParams {
   floorThicknessMm: number;
   floorSpanAxis: 'x' | 'y';
   floorRateEur: number;
+  roofType: 'flat' | 'gable' | 'mono';
+  roofPitchDeg: number;
+  roofModuleMm: number;
+  roofRateEur: number;
   set: <K extends keyof OvenParams>(key: K, value: OvenParams[K]) => void;
   setBase: (b: BaseSolid) => void;
   setView: (v: ViewMode) => void;
@@ -40,6 +44,8 @@ interface OvenStore extends OvenParams {
   setWallRate: (eurPerM2: number) => void;
   setFloor: (key: 'floorModuleMm' | 'floorThicknessMm' | 'floorRateEur', value: number) => void;
   setFloorAxis: (a: 'x' | 'y') => void;
+  setRoofType: (t: 'flat' | 'gable' | 'mono') => void;
+  setRoof: (key: 'roofPitchDeg' | 'roofModuleMm' | 'roofRateEur', value: number) => void;
 }
 
 export const useOven = create<OvenStore>((set) => ({
@@ -56,6 +62,10 @@ export const useOven = create<OvenStore>((set) => ({
   floorThicknessMm: 240,
   floorSpanAxis: 'y',
   floorRateEur: 120,
+  roofType: 'gable',
+  roofPitchDeg: 30,
+  roofModuleMm: 800,
+  roofRateEur: 160,
   set: (key, value) => set({ [key]: value } as Partial<OvenParams>),
   setBase: (base) => set({ base }),
   setView: (view) => set({ view }),
@@ -70,4 +80,6 @@ export const useOven = create<OvenStore>((set) => ({
   setWallRate: (wallRateEur) => set({ wallRateEur }),
   setFloor: (key, value) => set({ [key]: value }),
   setFloorAxis: (floorSpanAxis) => set({ floorSpanAxis }),
+  setRoofType: (roofType) => set({ roofType }),
+  setRoof: (key, value) => set({ [key]: value }),
 }));

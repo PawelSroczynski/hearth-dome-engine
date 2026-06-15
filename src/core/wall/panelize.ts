@@ -14,7 +14,7 @@
  *   thickness 300–400 mm
  */
 
-export type PanelType = 'standard' | 'lintel' | 'sill' | 'cassette' | 'void';
+export type PanelType = 'standard' | 'lintel' | 'sill' | 'cassette' | 'roof' | 'gable' | 'void';
 
 export interface Opening {
   x: number;      // left edge from wall start (mm)
@@ -56,6 +56,8 @@ export const PANEL_LIMITS: Record<Exclude<PanelType, 'void'>, { wMin: number; wM
   lintel: { wMin: 400, wMax: 3000, hMin: 424, hMax: 850 },
   sill: { wMin: 600, wMax: 3000, hMin: 424, hMax: 850 },
   cassette: { wMin: 300, wMax: 1200, hMin: 400, hMax: 6000 }, // floor cassette (our catalog)
+  roof: { wMin: 400, wMax: 1200, hMin: 400, hMax: 6000 },     // roof panel (our catalog)
+  gable: { wMin: 400, wMax: 6000, hMin: 200, hMax: 4000 },    // gable infill (placeholder)
 };
 export const THICKNESS_MIN = 300;
 export const THICKNESS_MAX = 400;

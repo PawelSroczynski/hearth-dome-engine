@@ -8,7 +8,7 @@ const model: BuildingModel = {
   wallThicknessMm: 400,
   targetWidthMm: 800,
   openingsByEdge: [[{ x: 800, w: 1000, sillH: 0, headH: 2100 }], [], [], []],
-  roof: { type: 'gable', pitchDeg: 30, ridgeAxis: 'x' },
+  roof: { type: 'gable', pitchDeg: 30, ridgeAxis: 'x', moduleWidthMm: 800 },
   floor: { moduleWidthMm: 800, thicknessMm: 240, spanAxis: 'y' },
 };
 

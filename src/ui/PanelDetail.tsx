@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { useOven } from '../store';
 import { wallBom } from '../core/wall/panelize';
-import { buildingFromWall, allWallPanels, floorCassettes } from '../core/building/model';
+import { buildingFromWall, allWallPanels, floorCassettes, roofPanels } from '../core/building/model';
 import { PANEL_COLORS } from '../render/wallMesh';
 
 interface Label { pos: THREE.Vector3; text: string; kind: 'dim' | 'angle' }
@@ -21,12 +21,17 @@ export function PanelDetail() {
   const floorModuleMm = useOven((s) => s.floorModuleMm);
   const floorThicknessMm = useOven((s) => s.floorThicknessMm);
   const floorSpanAxis = useOven((s) => s.floorSpanAxis);
-  // resolve the selected panel (or first in the BOM) across walls + floor
-  const model = buildingFromWall(wall, wall.depthMm ?? 4000, { moduleWidthMm: floorModuleMm, thicknessMm: floorThicknessMm, spanAxis: floorSpanAxis });
-  const bom = wallBom([...allWallPanels(model), ...floorCassettes(model)]);
+  const roofType = useOven((s) => s.roofType);
+  const roofPitchDeg = useOven((s) => s.roofPitchDeg);
+  const roofModuleMm = useOven((s) => s.roofModuleMm);
+  // resolve the selected panel (or first in the BOM) across walls + floor + roof
+  const model = buildingFromWall(wall, wall.depthMm ?? 4000,
+    { moduleWidthMm: floorModuleMm, thicknessMm: floorThicknessMm, spanAxis: floorSpanAxis },
+    { type: roofType, pitchDeg: roofPitchDeg, ridgeAxis: 'x', moduleWidthMm: roofModuleMm });
+  const bom = wallBom([...allWallPanels(model), ...floorCassettes(model), ...roofPanels(model)]);
   const pick = bom.find((r) => `${r.type}:${r.w}x${r.h}` === selected) ?? bom[0];
   const pType = pick?.type, pW = pick?.w, pH = pick?.h, pOk = pick?.ok;
-  const tMm = pType === 'cassette' ? floorThicknessMm : wall.thicknessMm;
+  const tMm = pType === 'cassette' ? floorThicknessMm : pType === 'roof' ? 180 : wall.thicknessMm;
 
   const sceneRef = useRef<{
     scene: THREE.Scene; camera: THREE.PerspectiveCamera; renderer: THREE.WebGLRenderer;

@@ -1,7 +1,63 @@
 import * as THREE from 'three';
 import { panelizeSurface } from '../core/wall/panelize';
 import { wallPlacements, footprintCenter, footprintBBox, floorCassettes, type BuildingModel } from '../core/building/model';
+import { roofGeom, tileRect } from '../core/roof/roofize';
 import { PANEL_COLORS } from './wallMesh';
+
+const ROOF_T = 0.18; // roof slab thickness (m)
+
+function addSlope(group: THREE.Group, origin: THREE.Vector3, uDir: THREE.Vector3, vDir: THREE.Vector3, widthMm: number, rafterMm: number, moduleMm: number) {
+  const sg = new THREE.Group();
+  // right-handed basis (local x=uDir, y=normal, z=vDir): normal = vDir × uDir so the
+  // matrix is a proper rotation (uDir × vDir would be a reflection → bad quaternion).
+  const normal = new THREE.Vector3().copy(vDir).cross(uDir).normalize();
+  sg.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(uDir, normal, vDir));
+  sg.position.copy(origin);
+  for (const p of tileRect(widthMm, rafterMm, moduleMm, 'roof')) {
+    const w = p.w / 1000, len = p.h / 1000;
+    const geo = new THREE.BoxGeometry(w * 0.985, ROOF_T, len * 0.985);
+    const color = p.ok ? PANEL_COLORS.roof : PANEL_COLORS.bad;
+    const mesh = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color, roughness: 0.9, metalness: 0, side: THREE.DoubleSide }));
+    mesh.position.set(p.x / 1000 + w / 2, ROOF_T / 2, p.y / 1000 + len / 2);
+    mesh.userData = { shapeLabel: `roof:${Math.round(p.w)}x${Math.round(p.h)}`, panelType: 'roof', w: p.w, h: p.h, ok: p.ok, baseColor: color };
+    sg.add(mesh);
+    const line = new THREE.LineSegments(new THREE.EdgesGeometry(geo, 1), new THREE.LineBasicMaterial({ color: 0x2a1c12, transparent: true, opacity: 0.4 }));
+    line.position.copy(mesh.position); sg.add(line);
+  }
+  group.add(sg);
+}
+
+function addTriangle(group: THREE.Group, a: THREE.Vector3, b: THREE.Vector3, c: THREE.Vector3, baseMm: number, heightMm: number, ok: boolean) {
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute([a.x, a.y, a.z, b.x, b.y, b.z, c.x, c.y, c.z], 3));
+  geo.computeVertexNormals();
+  const color = ok ? PANEL_COLORS.gable : PANEL_COLORS.bad;
+  const mesh = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color, roughness: 0.9, metalness: 0, side: THREE.DoubleSide }));
+  mesh.userData = { shapeLabel: `gable:${Math.round(baseMm)}x${Math.round(heightMm)}`, panelType: 'gable', w: baseMm, h: heightMm, ok };
+  group.add(mesh);
+}
+
+function addRoof(group: THREE.Group, m: BuildingModel) {
+  if (m.roof.type === 'flat') return;
+  const { L, D } = footprintBBox(m.footprint);
+  const Lm = L / 1000, Dm = D / 1000, Hm = m.wallHeightMm / 1000;
+  const g = roofGeom(L, D, m.roof.pitchDeg, m.roof.type);
+  const riseM = g.riseMm / 1000;
+  const mod = m.roof.moduleWidthMm;
+  const V = (x: number, y: number, z: number) => new THREE.Vector3(x, y, z);
+  if (m.roof.type === 'gable') {
+    const rafter = Math.hypot(Dm / 2, riseM);
+    addSlope(group, V(-Lm / 2, Hm, -Dm / 2), V(1, 0, 0), V(0, riseM, Dm / 2).normalize(), L, rafter * 1000, mod);
+    addSlope(group, V(-Lm / 2, Hm, Dm / 2), V(1, 0, 0), V(0, riseM, -Dm / 2).normalize(), L, rafter * 1000, mod);
+    for (const sx of [-Lm / 2, Lm / 2])
+      addTriangle(group, V(sx, Hm, -Dm / 2), V(sx, Hm, Dm / 2), V(sx, Hm + riseM, 0), g.gableBaseMm, g.gableHeightMm, g.gableHeightMm <= 4000.5);
+  } else {
+    const rafter = Math.hypot(Dm, riseM);
+    addSlope(group, V(-Lm / 2, Hm, -Dm / 2), V(1, 0, 0), V(0, riseM, Dm).normalize(), L, rafter * 1000, mod);
+    for (const sx of [-Lm / 2, Lm / 2])
+      addTriangle(group, V(sx, Hm, -Dm / 2), V(sx, Hm, Dm / 2), V(sx, Hm + riseM, Dm / 2), g.gableBaseMm, g.gableHeightMm, g.gableHeightMm <= 4000.5);
+  }
+}
 
 /**
  * Build the whole StrawPanel building shell: every footprint edge becomes a wall,
@@ -51,5 +107,7 @@ export function buildBuildingGroup(m: BuildingModel): THREE.Group {
     line.position.copy(mesh.position);
     group.add(line);
   }
+
+  addRoof(group, m);
   return group;
 }

@@ -46,6 +46,9 @@ export default function App() {
   const floorModuleMm = useOven((s) => s.floorModuleMm);
   const floorThicknessMm = useOven((s) => s.floorThicknessMm);
   const floorSpanAxis = useOven((s) => s.floorSpanAxis);
+  const roofType = useOven((s) => s.roofType);
+  const roofPitchDeg = useOven((s) => s.roofPitchDeg);
+  const roofModuleMm = useOven((s) => s.roofModuleMm);
   const params = useMemo<OvenParams>(
     () => ({ base, frequency, subdivisionClass, classIIIn: classIIInVal, interiorMm, thicknessMm, cutAngleDeg }),
     [base, frequency, subdivisionClass, classIIInVal, interiorMm, thicknessMm, cutAngleDeg],
@@ -91,8 +94,10 @@ export default function App() {
         -((e.clientY - rect.top) / rect.height) * 2 + 1,
       );
       raycaster.setFromCamera(ndc, ctx.camera);
-      const meshes = ctx.dome.children.filter((o): o is THREE.Mesh => o instanceof THREE.Mesh);
-      const hit = raycaster.intersectObjects(meshes, false)[0];
+      // recurse into sub-groups (roof slopes live in nested groups) and take the
+      // first hit that carries a shapeLabel (skip edge LineSegments).
+      const hit = raycaster.intersectObject(ctx.dome, true)
+        .find((h) => typeof h.object.userData?.shapeLabel === 'string');
       const label = hit?.object.userData.shapeLabel as string | undefined;
       if (label) setSelected(label);
     };
@@ -130,7 +135,8 @@ export default function App() {
     if (construction === 'wall') {
       const depth = wall.depthMm ?? 4000;
       group = buildBuildingGroup(buildingFromWall(wall, depth,
-        { moduleWidthMm: floorModuleMm, thicknessMm: floorThicknessMm, spanAxis: floorSpanAxis }));
+        { moduleWidthMm: floorModuleMm, thicknessMm: floorThicknessMm, spanAxis: floorSpanAxis },
+        { type: roofType, pitchDeg: roofPitchDeg, ridgeAxis: 'x', moduleWidthMm: roofModuleMm }));
       floorR = Math.max(wall.lengthMm, depth) / 1000 * 0.85;
       ctx.floor.position.y = -(floorThicknessMm / 1000) - 0.02; // decorative disc below the slab
     } else if (view === 'mould') {
@@ -150,7 +156,7 @@ export default function App() {
     if (construction !== 'wall') ctx.floor.position.y = 0;
     ctx.floor.geometry.dispose();
     ctx.floor.geometry = new THREE.CircleGeometry(floorR, 64);
-  }, [result, view, mouldWallMm, mouldFlangeMm, construction, wall, floorModuleMm, floorThicknessMm, floorSpanAxis]);
+  }, [result, view, mouldWallMm, mouldFlangeMm, construction, wall, floorModuleMm, floorThicknessMm, floorSpanAxis, roofType, roofPitchDeg, roofModuleMm]);
 
   // reframe the camera when switching construction type
   useEffect(() => {
