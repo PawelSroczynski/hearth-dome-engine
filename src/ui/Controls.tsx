@@ -29,7 +29,7 @@ const mm = (v: number) => `${Math.round(v)} mm`;
 
 export function Controls() {
   const s = useOven();
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(() => window.innerWidth > 680); // collapsed by default on mobile
   const nIII = classIIIn(s.frequency, s.classIIIn);
   return (
     <section className="panel controls">

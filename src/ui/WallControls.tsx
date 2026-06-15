@@ -21,7 +21,7 @@ const m = (v: number) => `${(v / 1000).toFixed(2).replace(/\.?0+$/, '')} m`;
 
 export function WallControls() {
   const s = useOven();
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(() => window.innerWidth > 680); // collapsed by default on mobile
   const door = s.wall.openings[0];
   const win = s.wall.openings[1];
   return (
